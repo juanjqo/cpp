@@ -62,12 +62,12 @@ void DQ_Kinetics::set_masses(const std::vector<double> &masses)
     masses_ = masses;
 }
 
-void DQ_Kinetics::_check_inertial_parameters()
+void DQ_Kinetics::_check_inertial_parameters(const size_t& expected_number_of_bodies)
 {
     std::size_t s_masses = masses_.size();
     std::size_t s_coms   = center_of_masses_.size();
     std::size_t s_inertias = inertia_tensors_.size();
-    if ((s_masses == s_coms) && (s_coms == s_inertias))
+    if ((s_masses == s_coms) && (s_coms == s_inertias) && (s_coms ==  expected_number_of_bodies))
     {
         if(s_coms == 0)
         {

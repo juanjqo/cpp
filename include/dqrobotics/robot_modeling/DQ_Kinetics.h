@@ -31,7 +31,7 @@ class DQ_Kinetics
 {
 protected:
 
-    void _check_inertial_parameters();
+    void _check_inertial_parameters(const size_t& expected_number_of_bodies);
     std::vector<Matrix<double, 3,3>> inertia_tensors_;
     std::vector<Vector3d> center_of_masses_;
     std::vector<double> masses_;
