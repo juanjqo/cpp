@@ -51,9 +51,26 @@ DQ_SerialManipulatorMDH::DQ_SerialManipulatorMDH(const MatrixXd& mdh_matrix):
 {
     if(mdh_matrix.rows() != 5)
     {
-        throw(std::range_error("Bad DQ_SerialManipulatorDH(mdh_matrix) call: mdh_matrix should be 5xn"));
+        throw(std::range_error("Bad DQ_SerialManipulatorMDH(mdh_matrix) call: mdh_matrix should be 5xn"));
     }
     mdh_matrix_ = mdh_matrix;
+}
+
+DQ_SerialManipulatorMDH::DQ_SerialManipulatorMDH(const MatrixXd &mdh_matrix,
+                                                 const std::vector<Matrix<double,3,3> > &inertia_tensors,
+                                                 const std::vector<Vector3d> &center_of_masses,
+                                                 const std::vector<double> &masses):
+DQ_SerialManipulator(mdh_matrix.cols())
+{
+    if(mdh_matrix.rows() != 5)
+    {
+        throw(std::range_error("Bad DQ_SerialManipulatorMDH(mdh_matrix) call: mdh_matrix should be 5xn"));
+    }
+    mdh_matrix_ = mdh_matrix;
+    set_center_of_masses(center_of_masses);
+    set_inertia_tensors(inertia_tensors);
+    set_masses(masses);
+    _check_inertial_parameters();
 }
 
 /**

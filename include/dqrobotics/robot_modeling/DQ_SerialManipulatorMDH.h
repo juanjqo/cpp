@@ -45,7 +45,11 @@ public:
     [[deprecated("Use ? instead.")]] VectorXd get_types() const;
 
     DQ_SerialManipulatorMDH()=delete;
-    DQ_SerialManipulatorMDH(const MatrixXd& mdh_matrix);    
+    DQ_SerialManipulatorMDH(const MatrixXd& mdh_matrix);
+    DQ_SerialManipulatorMDH(const MatrixXd& mdh_matrix,
+                           const std::vector<Matrix<double, 3,3>> &inertia_tensors,
+                           const std::vector<Vector3d> &center_of_masses,
+                           const std::vector<double> &masses);
 
     using DQ_SerialManipulator::raw_pose_jacobian;
     using DQ_SerialManipulator::raw_pose_jacobian_derivative;
