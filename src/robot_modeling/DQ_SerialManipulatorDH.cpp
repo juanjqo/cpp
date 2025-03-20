@@ -67,7 +67,7 @@ DQ_SerialManipulatorDH::DQ_SerialManipulatorDH(const MatrixXd &dh_matrix,
     set_center_of_masses(center_of_masses);
     set_inertia_tensors(inertia_tensors);
     set_masses(masses);
-    _check_inertial_parameters(dh_matrix.cols());
+    _check_inertial_parameters();
 }
 
 /**
