@@ -58,6 +58,9 @@ ADD_LIBRARY(dqrobotics SHARED
     src/robot_modeling/DQ_WholeBody.cpp
     src/robot_modeling/DQ_SerialWholeBody.cpp
 
+    src/robot_modeling/DQ_Kinetics.cpp
+    src/robot_modeling/DQ_Dynamics.cpp
+
     src/robot_control/DQ_KinematicController.cpp
     src/robot_control/DQ_PseudoinverseController.cpp
     src/robot_control/DQ_NumericalFilteredPseudoInverseController.cpp
@@ -111,6 +114,8 @@ INSTALL(FILES
     include/dqrobotics/robot_modeling/DQ_DifferentialDriveRobot.h
     include/dqrobotics/robot_modeling/DQ_WholeBody.h
     include/dqrobotics/robot_modeling/DQ_SerialWholeBody.h
+    include/dqrobotics/robot_modeling/DQ_Kinetics.h
+    include/dqrobotics/robot_modeling/DQ_Dynamics.h
     DESTINATION "include/dqrobotics/robot_modeling")
 
 # robot_control headers
@@ -181,6 +186,8 @@ INSTALL(FILES
     src/robot_modeling/DQ_DifferentialDriveRobot.cpp
     src/robot_modeling/DQ_WholeBody.cpp
     src/robot_modeling/DQ_SerialWholeBody.cpp
+    src/robot_modeling/DQ_Kinetics.cpp
+    src/robot_modeling/DQ_Dynamics.cpp
     DESTINATION "src/dqrobotics/robot_modeling")
 
 # robots folder
