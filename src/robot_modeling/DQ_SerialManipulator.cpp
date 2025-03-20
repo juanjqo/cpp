@@ -31,7 +31,7 @@ namespace DQ_robotics
 {
 
 DQ_SerialManipulator::DQ_SerialManipulator(const int &dim_configuration_space):
-    DQ_Kinematics()
+    DQ_Dynamics()
 {
     curr_effector_ = DQ(1);
     lower_q_limit_.resize(dim_configuration_space);

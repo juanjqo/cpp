@@ -24,11 +24,12 @@ Contributors:
 */
 
 #include <dqrobotics/robot_modeling/DQ_Kinematics.h>
+#include <dqrobotics/robot_modeling/DQ_Dynamics.h>
 
 namespace DQ_robotics
 {
 
-class DQ_SerialManipulator: public DQ_Kinematics
+class DQ_SerialManipulator: public DQ_Dynamics
 {
 protected:
     DQ curr_effector_;
