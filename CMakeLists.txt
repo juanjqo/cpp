@@ -60,6 +60,10 @@ ADD_LIBRARY(dqrobotics SHARED
 
     src/robot_modeling/DQ_Kinetics.cpp
     src/robot_modeling/DQ_Dynamics.cpp
+    src/robot_modeling/DQ_GaussPrinciple.cpp
+
+    src/solvers/DQ_DynamicsSolver.cpp
+    src/solvers/DQ_GaussPrincipleSolver.cpp
 
     src/robot_control/DQ_KinematicController.cpp
     src/robot_control/DQ_PseudoinverseController.cpp
@@ -117,6 +121,7 @@ INSTALL(FILES
     include/dqrobotics/robot_modeling/DQ_SerialWholeBody.h
     include/dqrobotics/robot_modeling/DQ_Kinetics.h
     include/dqrobotics/robot_modeling/DQ_Dynamics.h
+    include/dqrobotics/robot_modeling/DQ_GaussPrinciple.h
     DESTINATION "include/dqrobotics/robot_modeling")
 
 # robot_control headers
@@ -142,6 +147,8 @@ INSTALL(FILES
 # solvers headers
 INSTALL(FILES
     include/dqrobotics/solvers/DQ_QuadraticProgrammingSolver.h
+    include/dqrobotics/solvers/DQ_DynamicsSolver.h
+    include/dqrobotics/solvers/DQ_GaussPrincipleSolver.h
     DESTINATION "include/dqrobotics/solvers")
 
 ################################################################
@@ -189,6 +196,7 @@ INSTALL(FILES
     src/robot_modeling/DQ_SerialWholeBody.cpp
     src/robot_modeling/DQ_Kinetics.cpp
     src/robot_modeling/DQ_Dynamics.cpp
+    src/robot_modeling/DQ_GaussPrinciple.cpp
     DESTINATION "src/dqrobotics/robot_modeling")
 
 # robots folder
@@ -200,6 +208,12 @@ INSTALL(FILES
     src/robots/KukaYoubotRobot.cpp
     src/robots/FrankaEmikaPandaRobot.cpp
     DESTINATION "src/dqrobotics/robots")
+
+# solvers headers
+INSTALL(FILES
+    src/solvers/DQ_DynamicsSolver.cpp
+    src/solvers/DQ_GaussPrincipleSolver.cpp
+    DESTINATION "include/dqrobotics/solvers")
 
 add_executable(test_class src/test_class.cpp)
 target_link_libraries(test_class dqrobotics)

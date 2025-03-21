@@ -71,12 +71,8 @@ void DQ_Kinetics::_check_dim_inertial_parameters()
     _check_parameters(center_of_masses_, "The center of masses are not defined.");
     _check_parameters(inertia_tensors_, "The inertia tensors are not defined.");
 
-    std::size_t s_masses = masses_.size();
-    std::size_t s_coms   = center_of_masses_.size();
-    std::size_t s_inertias = inertia_tensors_.size();
-
-    if ((s_masses == s_coms) && (s_coms == s_inertias))
-        number_of_bodies_ = s_masses;
+    if ((masses_.size() == center_of_masses_.size()) && (center_of_masses_.size() == inertia_tensors_.size()))
+        number_of_bodies_ = masses_.size();
     else
         throw std::runtime_error(std::string("The inertial parameters have incompatible sizes!"));
 }
