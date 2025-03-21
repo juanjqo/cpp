@@ -74,6 +74,7 @@ ADD_LIBRARY(dqrobotics SHARED
     src/robots/KukaLw4Robot.cpp
     src/robots/KukaYoubotRobot.cpp
     src/robots/FrankaEmikaPandaRobot.cpp
+
     )
 
 SET_TARGET_PROPERTIES(dqrobotics 
@@ -199,3 +200,6 @@ INSTALL(FILES
     src/robots/KukaYoubotRobot.cpp
     src/robots/FrankaEmikaPandaRobot.cpp
     DESTINATION "src/dqrobotics/robots")
+
+add_executable(test_class src/test_class.cpp)
+target_link_libraries(test_class dqrobotics)

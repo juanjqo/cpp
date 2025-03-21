@@ -193,9 +193,7 @@ DQ_SerialManipulatorMDH FrankaEmikaPandaRobot::dynamics()
     center_of_masses[6] = (Vector3d() <<0.0103629, -0.00420036, -0.0453707).finished();
 
     std::vector<double> masses = {4.97068, 0.646926,   3.2286,  3.58789,  1.22595,  1.66656, 0.735522};
-    //DQ_SerialManipulatorMDH robot =  FrankaEmikaPandaMDHRobot::kinematics();
-    //auto arm = std::make_shared<DQ_SerialManipulatorMDH>(robot);
-    //std::static_pointer_cast<DQ_Kinematics>(arm)
+
 
     DQ_SerialManipulatorMDH franka(_get_mdh_matrix(), inertia_tensors, center_of_masses, masses);
     franka.set_base_frame(_get_offset_base());

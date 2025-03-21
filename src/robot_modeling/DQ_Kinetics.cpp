@@ -29,16 +29,19 @@ DQ_Kinetics::DQ_Kinetics(){
 
 std::vector<Matrix<double, 3, 3> > DQ_Kinetics::get_inertia_tensors() const
 {
+    _check_parameters(inertia_tensors_, "Bad call in get_inertia_tensors(). The inertia tensors are not defined.");
     return inertia_tensors_;
 }
 
 std::vector<Vector3d> DQ_Kinetics::get_center_of_masses() const
 {
+    _check_parameters(inertia_tensors_, "Bad call in get_center_of_masses(). The center of masses are not defined.");
     return center_of_masses_;
 }
 
 std::vector<double> DQ_Kinetics::get_masses() const
 {
+    _check_parameters(inertia_tensors_, "Bad call in get_masses(). The masses are not defined.");
     return masses_;
 }
 
@@ -62,26 +65,20 @@ void DQ_Kinetics::set_masses(const std::vector<double> &masses)
     masses_ = masses;
 }
 
-void DQ_Kinetics::_check_inertial_parameters()
+void DQ_Kinetics::_check_dim_inertial_parameters()
 {
+    _check_parameters(masses_, "The masses are not defined.");
+    _check_parameters(center_of_masses_, "The center of masses are not defined.");
+    _check_parameters(inertia_tensors_, "The inertia tensors are not defined.");
+
     std::size_t s_masses = masses_.size();
     std::size_t s_coms   = center_of_masses_.size();
     std::size_t s_inertias = inertia_tensors_.size();
+
     if ((s_masses == s_coms) && (s_coms == s_inertias))
-    {
-        if(s_coms == 0)
-        {
-            throw std::runtime_error(std::string("Undefined inertial parameters!"));
-        }else{
-            number_of_bodies_ = s_masses;
-        }
-
-    }else
-    {
+        number_of_bodies_ = s_masses;
+    else
         throw std::runtime_error(std::string("The inertial parameters have incompatible sizes!"));
-    }
-
-
 }
 
 }

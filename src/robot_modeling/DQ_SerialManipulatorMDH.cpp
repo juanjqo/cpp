@@ -70,7 +70,7 @@ DQ_SerialManipulator(mdh_matrix.cols())
     set_center_of_masses(center_of_masses);
     set_inertia_tensors(inertia_tensors);
     set_masses(masses);
-    _check_inertial_parameters();
+    _check_dim_inertial_parameters();
 }
 
 /**

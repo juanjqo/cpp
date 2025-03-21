@@ -29,13 +29,20 @@ namespace DQ_robotics
 {
 class DQ_Kinetics
 {
-protected:
-
-    void _check_inertial_parameters();
+private:
+    template<typename T>
+    void _check_parameters(const T& parameters, const std::string& error_msg) const {
+        if (parameters.size() == 0)
+            throw std::runtime_error(error_msg);
+    }
     std::vector<Matrix<double, 3,3>> inertia_tensors_;
     std::vector<Vector3d> center_of_masses_;
     std::vector<double> masses_;
     int number_of_bodies_;
+
+protected:
+
+    void _check_dim_inertial_parameters();
     DQ_Kinetics();
 
 public:
