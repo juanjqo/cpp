@@ -3,7 +3,7 @@
 namespace DQ_robotics
 {
 
-DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(std::shared_ptr<DQ_Dynamics> &robot):
+DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics> &robot):
     DQ_DynamicsSolver(robot)
 {
 

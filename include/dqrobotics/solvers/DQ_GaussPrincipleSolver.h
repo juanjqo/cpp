@@ -10,12 +10,11 @@ class DQ_GaussPrincipleSolver: public DQ_DynamicsSolver, public DQ_GaussPrincipl
 protected:
     void _compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot);
 public:
-    DQ_GaussPrincipleSolver(std::shared_ptr<DQ_Dynamics>& robot);
+    DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
 
-    VectorXd compute_generalized_forces(const VectorXd& q, const VectorXd& q_dot,
+    VectorXd compute_generalized_forces(const VectorXd& q,
+                                        const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot) override;
-
-
 
     MatrixXd get_inertia_matrix() const override;
     VectorXd get_coriolis_vector() const override;

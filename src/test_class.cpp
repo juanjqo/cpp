@@ -11,8 +11,9 @@ int main(void)
 {
 
     auto robot = std::static_pointer_cast<DQ_Dynamics>(
-            std::make_shared<DQ_SerialManipulatorMDH>(FrankaEmikaPandaRobot::dynamics())
+      std::make_shared<DQ_SerialManipulatorMDH>(FrankaEmikaPandaRobot::kinematics())
         );
+
     auto gp_solver = DQ_GaussPrincipleSolver(robot);
 
     std::cout<<"Gravity: "<<robot->get_gravity_acceleration()<<std::endl;
@@ -24,7 +25,9 @@ int main(void)
         std::cout<<" "<<std::endl;
     }
     VectorXd q = (VectorXd(7) << 1,2,3,4,5,6,7).finished();
+
     auto forces = gp_solver.compute_generalized_forces(q, q, q);
+
     std::cout<<"forces: "<<forces.transpose()<<std::endl;
     std::cout<<"Inertia M:"<<gp_solver.get_inertia_matrix()<<std::endl;
     std::cout<<"Coriolis V:"<<gp_solver.get_coriolis_vector().transpose()<<std::endl;
