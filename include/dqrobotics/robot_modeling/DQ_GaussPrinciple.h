@@ -11,9 +11,12 @@ protected:
     std::vector<double> masses_;
 
     std::vector<Matrix<double, 8,8>>  Psi_;
+    std::vector<MatrixXd>  J_;
+    std::vector<MatrixXd>  J_dot_;
     std::vector<MatrixXd>  Jecom_;
     std::vector<MatrixXd>  Jecom_dot_;
-    std::vector<VectorXd>  vec_xcoms_;
+    std::vector<DQ>  xcoms_;
+    std::vector<DQ>  xs_;
     int n_links_;
 
     MatrixXd inertia_matrix_gp_;
@@ -25,6 +28,8 @@ protected:
                                     const std::vector<MatrixXd> &Js_dot,
                                     const VectorXd &q_dot,
                                     const DQ &gravity);
+
+
 
     static MatrixXd twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose);
     static MatrixXd twist_jacobian_derivative(const MatrixXd &pose_jacobian,
@@ -38,7 +43,7 @@ protected:
                                              const std::vector<MatrixXd> &Jecom_dot, const VectorXd& q_dot);
 
     static VectorXd _compute_gravitational_forces(const std::vector<MatrixXd> &Jecom, std::vector<Matrix<double, 8,8>> &Psi,
-                                                  const std::vector<VectorXd> &vec_xcoms, const DQ &gravity);
+                                                  const std::vector<DQ> &xcoms, const DQ &gravity);
 };
 }
 

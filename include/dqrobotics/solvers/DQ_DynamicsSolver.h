@@ -43,11 +43,12 @@ public:
                                                const VectorXd& q_dot,
                                                const VectorXd& q_dot_dot) = 0;
 
-   //virtual void compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot) = 0;
+   virtual MatrixXd compute_inertia_matrix(const VectorXd& q) = 0;
 
-   virtual MatrixXd get_inertia_matrix() const = 0;
-   virtual VectorXd get_coriolis_vector() const = 0;
-   virtual VectorXd get_gravitational_forces_vector() const = 0;
+   virtual VectorXd compute_coriolis_vector(const VectorXd& q,
+                                            const VectorXd& q_dot) = 0;
+
+   virtual VectorXd compute_gravitational_forces_vector(const VectorXd& q) = 0;
 
 };
 }

@@ -41,7 +41,6 @@ DQ_SerialManipulator::DQ_SerialManipulator(const int &dim_configuration_space):
     dim_configuration_space_ = dim_configuration_space;
 }
 
-
 int  DQ_SerialManipulator::get_dim_configuration_space() const
 {
     return dim_configuration_space_;
@@ -213,6 +212,12 @@ MatrixXd DQ_SerialManipulator::pose_jacobian_derivative(const VectorXd &q, const
     _check_q_vec(q);
     _check_q_vec(q_dot);
     return DQ_Kinematics::pose_jacobian_derivative(q, q_dot);
+}
+
+
+std::tuple<DQ, MatrixXd, MatrixXd> DQ_SerialManipulator::_raw_kinematics(const VectorXd &q, const VectorXd &q_dot) const
+{
+    return _raw_kinematics(q, q_dot, get_dim_configuration_space()-1);
 }
 
 }//namespace DQ_robotics

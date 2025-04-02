@@ -229,6 +229,67 @@ DQ  DQ_SerialManipulatorDH::raw_fkm(const VectorXd& q_vec, const int& to_ith_lin
     return q;
 }
 
+std::tuple<DQ, MatrixXd, MatrixXd> DQ_SerialManipulatorDH::_raw_kinematics(const VectorXd &q, const VectorXd &q_dot, const int &to_ith_link) const
+{
+    _check_q_vec(q);
+    _check_q_vec(q_dot);
+    _check_to_ith_link(to_ith_link);
+
+    DQ x(1);
+    DQ x_effector = raw_fkm(q,to_ith_link);
+    DQ x_dot{1};
+    MatrixXd J = MatrixXd::Zero(8,to_ith_link+1);
+    MatrixXd J_dot = MatrixXd::Zero(8,to_ith_link+1);
+
+
+    std::vector<DQ>     x_i(to_ith_link, DQ(0));
+    std::vector<DQ> x_dot_i(to_ith_link, DQ(0));
+    std::vector<DQ>     z_i(to_ith_link, DQ(0));
+
+    for(int i=0;i<to_ith_link+1;i++)
+    {
+        x = x*_dh2dq(q(i),i);
+        x_i.at(i) = x;
+
+
+
+        DQ w = _get_w(i);
+        DQ z = 0.5*Ad(x,w);
+        z_i.at(i) = z;
+        x_dot_i.at(i) = x_dot_i.at(i) + z*x_effector*q(i);
+    }
+    DQ& x_effector_dot = x_dot_i.back();
+
+
+    int jth=0;
+
+
+    for(int i=0;i<to_ith_link+1;i++)
+    {
+        DQ w = _get_w(i);
+        DQ z = 0.5*Ad(x,w);
+        x = x*_dh2dq(q(i),i);
+        DQ j = z * x_effector;
+        J.col(i)= vec8(j);
+
+        VectorXd vec_zdot;
+        if(i==0)
+        {
+            vec_zdot = VectorXd::Zero(8,1);
+        }
+        else
+        {
+            vec_zdot = 0.5*(haminus8(w*conj(x)) + hamiplus8(x*w)*C8())*raw_pose_jacobian(q,i-1)*q_dot.head(i);
+        }
+
+        //J_dot.col(jth) = haminus8(x_effector)*vec_zdot + hamiplus8(z)*vec_x_effector_dot;
+        x = x*_dh2dq(q(jth),i);
+        jth = jth+1;
+    }
+
+    return {x_i.back(), J, J};
+}
+
 
 /**
  * @brief This method returns the pose Jacobian that satisfies vec(x_dot) = J * q_vec_dot,
@@ -246,8 +307,10 @@ MatrixXd DQ_SerialManipulatorDH::raw_pose_jacobian(const VectorXd &q_vec, const 
     _check_q_vec(q_vec);
     _check_to_ith_link(to_ith_link);
 
-    MatrixXd J = MatrixXd::Zero(8,to_ith_link+1);
     DQ x_effector = raw_fkm(q_vec,to_ith_link);
+    MatrixXd J = MatrixXd::Zero(8,to_ith_link+1);
+    MatrixXd J_dot = MatrixXd::Zero(8,to_ith_link+1);
+
 
     DQ x(1);
 

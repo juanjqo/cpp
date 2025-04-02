@@ -24,7 +24,6 @@ Contributors:
 
 namespace DQ_robotics
 {
-
 DQ_HolonomicBase::DQ_HolonomicBase()
 {
     dim_configuration_space_ = 3;

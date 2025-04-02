@@ -34,6 +34,7 @@ protected:
 
     DQ _get_w(const int& ith) const;
     DQ _mdh2dq(const double& q, const int& ith) const;
+    DQ _mdh2dq_dot(const double& q, const double& q_dot, const int& ith) const;
 public:
 
     // Deprecated on 22.04, will be removed on the next release.
@@ -58,6 +59,7 @@ public:
     MatrixXd raw_pose_jacobian(const VectorXd& q_vec, const int& to_ith_link) const override;
     MatrixXd raw_pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const override;
     DQ raw_fkm(const VectorXd &q_vec, const int &to_ith_link) const override;
+    std::tuple<DQ, MatrixXd, MatrixXd> _raw_kinematics(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const override;
 };
 
 }

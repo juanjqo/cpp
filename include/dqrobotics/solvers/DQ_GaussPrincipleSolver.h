@@ -1,14 +1,66 @@
 #pragma once
 #include<dqrobotics/DQ.h>
+#include<dqrobotics/robot_modeling/DQ_SerialManipulatorDH.h>
+#include<dqrobotics/robot_modeling/DQ_SerialManipulatorMDH.h>
+#include<dqrobotics/robot_modeling/DQ_SerialManipulatorDenso.h>
+#include<dqrobotics/robot_modeling/DQ_HolonomicBase.h>
+#include<dqrobotics/robot_modeling/DQ_SerialWholeBody.h>
 #include<dqrobotics/robot_modeling/DQ_GaussPrinciple.h>
 #include<dqrobotics/solvers/DQ_DynamicsSolver.h>
 
 namespace DQ_robotics
 {
-class DQ_GaussPrincipleSolver: public DQ_DynamicsSolver, public DQ_GaussPrinciple
+class DQ_GaussPrincipleSolver: public DQ_DynamicsSolver
 {
 protected:
+    std::vector<Matrix<double, 3,3>> inertia_tensors_;
+    std::vector<Vector3d> center_of_masses_;
+    std::vector<double> masses_;
+
+    std::vector<Matrix<double, 8,8>>  Psi_;
+    std::vector<MatrixXd>  J_;
+    std::vector<MatrixXd>  J_dot_;
+    std::vector<MatrixXd>  Jecom_;
+    std::vector<MatrixXd>  Jecom_dot_;
+    std::vector<DQ>  xcoms_;
+    std::vector<DQ>  xs_;
+    int n_links_;
+
+    MatrixXd inertia_matrix_gp_;
+    VectorXd coriolis_vector_gp_;
+    VectorXd gravitational_forces_gp_;
+
+enum class ROBOT_TYPE
+    {
+        SERIAL_MANIPULATOR, SERIAL_WHOLE_BODY, HOLONOMIC_BASE
+    };
+    ROBOT_TYPE robot_type_;
+
+    bool _update_robot_configuration(const VectorXd &q);
+    bool _update_robot_configuration_velocities(const VectorXd &q_dot);
+    void _initialize_vectors();
+
+protected:
+
     void _compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot);
+
+    void _compute_twist_jacobians(const VectorXd &q);
+    void _compute_twist_jacobian_derivatives(const VectorXd &q, const VectorXd &q_dot);
+
+    static MatrixXd twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose);
+    static MatrixXd twist_jacobian_derivative(const MatrixXd &pose_jacobian,
+                                              const MatrixXd &pose_jacobian_derivative,
+                                              const DQ &pose,
+                                              const VectorXd &q_dot);
+
+
+    std::shared_ptr<DQ_SerialManipulator> serial_manipulator_;
+    std::shared_ptr<DQ_SerialWholeBody> serial_whole_body_;
+    std::shared_ptr<DQ_HolonomicBase> holonomic_base_;
+
+    bool is_serial_manipulator_ = false;
+    bool is_serial_whole_body_ = false;
+    bool is_holonomic_base_ = false;
 public:
     DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
 
@@ -16,9 +68,10 @@ public:
                                         const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot) override;
 
-    MatrixXd get_inertia_matrix() const override;
-    VectorXd get_coriolis_vector() const override;
-    VectorXd get_gravitational_forces_vector() const override;
+    MatrixXd compute_inertia_matrix(const VectorXd& q) override;
+    VectorXd compute_coriolis_vector(const VectorXd& q,
+                                 const VectorXd& q_dot) override;
+    VectorXd compute_gravitational_forces_vector(const VectorXd& q) override;
 };
 }
 

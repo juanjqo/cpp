@@ -34,7 +34,9 @@ class DQ_SerialManipulator: public DQ_Dynamics
 protected:
     DQ curr_effector_;
 
+
     DQ_SerialManipulator(const int& dofs);
+
 public:
     DQ get_effector() const;
     DQ set_effector(const DQ& new_effector);
@@ -69,6 +71,9 @@ public:
     virtual MatrixXd pose_jacobian(const VectorXd& q_vec) const override; //Override from DQ_Kinematics
     virtual MatrixXd pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const override; //Override from DQ_Kinematics
     virtual MatrixXd pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot) const override; //Override from DQ_Kinematics
+
+    virtual std::tuple<DQ, MatrixXd, MatrixXd> _raw_kinematics(const VectorXd& q, const VectorXd& q_dot) const;
+    virtual std::tuple<DQ, MatrixXd, MatrixXd> _raw_kinematics(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const = 0;
 
 };
 

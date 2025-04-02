@@ -127,6 +127,56 @@ DQ DQ_SerialManipulatorMDH::_mdh2dq(const double &q, const int &ith) const
                 );
 }
 
+DQ DQ_SerialManipulatorMDH::_mdh2dq_dot(const double &q, const double &q_dot, const int &ith) const
+{
+    double half_theta = mdh_matrix_(0,ith)/2.0;
+    double d = mdh_matrix_(1,ith);
+    const double &a = mdh_matrix_(2,ith);
+    const double half_alpha = mdh_matrix_(3,ith)/2.0;
+    const int joint_type = int(mdh_matrix_(4,ith));
+
+    // Add the effect of the joint value
+    if(joint_type == JOINT_ROTATIONAL)
+    {
+        half_theta = half_theta + (q/2.0);
+    }
+    else
+    {
+        d = d + q;
+    }
+    // Pre-calculate cosines and sines
+    const double sine_of_half_theta = sin(half_theta);
+    const double cosine_of_half_theta = cos(half_theta);
+    const double sine_of_half_alpha = sin(half_alpha);
+    const double cosine_of_half_alpha = cos(half_alpha);
+
+    const double hdh1_dot = -0.5*q_dot*cosine_of_half_alpha* sine_of_half_theta;
+    const double hdh2_dot = -0.5*q_dot*  sine_of_half_alpha* sine_of_half_theta;
+    const double hdh3_dot =  0.5*q_dot*  sine_of_half_alpha* cosine_of_half_theta;
+    const double hdh4_dot =  0.5*q_dot*cosine_of_half_alpha* cosine_of_half_theta;
+
+
+    DQ xmDH;
+    if(joint_type == JOINT_ROTATIONAL)
+    {
+        xmDH = DQ(
+               hdh1_dot,
+               hdh2_dot,
+              -hdh3_dot,
+               hdh4_dot,
+            -0.5*( d*hdh4_dot + a*hdh2_dot),
+             0.5*(-d*hdh3_dot + a*hdh1_dot),
+            -0.5*( d*hdh2_dot + a*hdh4_dot),
+             0.5*( d*hdh1_dot - a*hdh3_dot)
+            );
+    }
+    else
+    {
+        throw std::runtime_error("Not implemented yet");
+    }
+    return xmDH;
+}
+
 /**
  * @brief This protected method computes the dual quaternion related with the time derivative of the
  *        unit dual quaternion pose using the MDH convention. 
@@ -283,6 +333,80 @@ DQ  DQ_SerialManipulatorMDH::raw_fkm(const VectorXd& q_vec, const int& to_ith_li
         q = q * _mdh2dq(q_vec(i-j), i);
     }
     return q;
+}
+
+std::tuple<DQ, MatrixXd, MatrixXd> DQ_SerialManipulatorMDH::_raw_kinematics(const VectorXd &q,
+                                                                            const VectorXd &q_dot,
+                                                                            const int &to_ith_link) const
+{
+    _check_q_vec(q);
+    _check_q_vec(q_dot);
+    _check_to_ith_link(to_ith_link);
+
+    const int n = to_ith_link+1;
+    DQ x_effector = raw_fkm(q,to_ith_link);
+
+    DQ x{1};
+    DQ x_dot{1};
+    MatrixXd J = MatrixXd::Zero(8,n);
+    MatrixXd J_int = MatrixXd::Zero(8,n);
+    MatrixXd J_dot = MatrixXd::Zero(8,n);
+
+
+    std::vector<DQ>     x_i(n, DQ(0));
+    std::vector<DQ> x_dot_i(n, DQ(0));
+    std::vector<DQ>     z_i(n, DQ(0));
+    std::vector<DQ>     w_i(n, DQ(0));
+    std::vector<DQ> z_dot_i(n, DQ(0));
+    std::vector<VectorXd> vec_zdot_i(n, VectorXd::Zero(8));
+
+
+
+    for(int i=0;i<n;i++)
+    {
+
+
+        x_i.at(i) = x;
+
+        w_i.at(i) = _get_w(i);
+        z_i.at(i) = 0.5*Ad(x,w_i.at(i));
+
+        x_dot_i.at(i) = x_dot;//x_dot;//x_dot_i.at(i) + z_i.at(i)*x_i.at(i)*q_dot(i);
+
+        J.col(i)= vec8(z_i.at(i) * x_effector);
+
+
+        if (i==0)
+        {
+            z_dot_i.at(i) = DQ(0);
+        }
+        else
+        {
+            //x_dot_i.at(i)  = DQ(raw_pose_jacobian(q,i-1)*q_dot.head(i));
+            //x_dot_i.at(i)  = x_dot_i.at(i)*_mdh2dq(q(i),i) +  x * _mdh2dq_dot(q(i), q_dot(i),i);
+            //z_dot_i.at(i) = 0.5*x_dot_i.at(i)*w_i.at(i)*x.conj() + 0.5*x*w_i.at(i)*x_dot_i.at(i).conj();
+            J_int.col(i-1) = vec8(z_i.at(i-1) *  raw_fkm(q,i-1));
+            vec_zdot_i.at(i) = 0.5*(haminus8(w_i.at(i)*conj(x)) + hamiplus8(x*w_i.at(i))*C8())*J_int.block(0,0,8,i)*q_dot.head(i);
+            //vec_zdot_i.at(i) = 0.5*(haminus8(w_i.at(i)*conj(x)) + hamiplus8(x*w_i.at(i))*C8())*raw_pose_jacobian(q,i-1)*q_dot.head(i);
+
+        }
+        x = x*_mdh2dq(q(i),i);
+        //x_dot = x_dot*_mdh2dq(q(i),i) + x * _mdh2dq_dot(q(i), q_dot(i),i);
+
+
+    }
+
+    int jth=0;
+    for(int i=0;i<n;i++)
+    {
+        J_dot.col(i) = haminus8(x_effector)*vec_zdot_i.at(i) + hamiplus8(z_i.at(i))*J*q_dot.head(n);
+        //jth = jth+1;
+    }
+
+
+
+
+    return {x_i.back(), J, J_dot};
 }
 
 

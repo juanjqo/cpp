@@ -14,13 +14,15 @@ void DQ_GaussPrinciple::_compute_euler_lagrange_gp(const std::vector<DQ> &xs, co
     {
         Jecom_.push_back(zeros_8_nlinks);
         Jecom_dot_.push_back(zeros_8_nlinks);
-        vec_xcoms_.push_back(VectorXd::Zero(8));
+        xcoms_.push_back(DQ(1));
+        xs_.push_back(DQ(1));
 
         DQ x = xs[i];
+        xs_.at(i) = x;
         DQ xcom = x*DQ(1,0,0,0,0, 0.5*center_of_masses_[i](0),
                          0.5*center_of_masses_[i](1),
                          0.5*center_of_masses_[i](2));
-        vec_xcoms_[i] = vec8(xcom);
+        xcoms_.at(i) = xcom;
         J_aux.block(0,0,8,i+1) = Js[i];
         J_aux_dot.block(0,0,8,i+1) = Js_dot[i];
 
@@ -35,8 +37,9 @@ void DQ_GaussPrinciple::_compute_euler_lagrange_gp(const std::vector<DQ> &xs, co
     }
     inertia_matrix_gp_ =       DQ_GaussPrinciple::_compute_inertia_matrix(Jecom_, Psi_);
     coriolis_vector_gp_ =      DQ_GaussPrinciple::_compute_coriolis_vector(Jecom_, Psi_, Jecom_dot_, q_dot);
-    gravitational_forces_gp_ = DQ_GaussPrinciple::_compute_gravitational_forces(Jecom_, Psi_, vec_xcoms_, gravity);
+    gravitational_forces_gp_ = DQ_GaussPrinciple::_compute_gravitational_forces(Jecom_, Psi_, xcoms_, gravity);
 }
+
 
 MatrixXd DQ_GaussPrinciple::twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose)
 {
@@ -84,7 +87,7 @@ VectorXd DQ_GaussPrinciple::_compute_coriolis_vector(const std::vector<MatrixXd>
 
 VectorXd DQ_GaussPrinciple::_compute_gravitational_forces(const std::vector<MatrixXd> &Jecom,
                                                           std::vector<Matrix<double, 8,8>> &Psi,
-                                                          const std::vector<VectorXd> &vec_xcoms,
+                                                          const std::vector<DQ> &xcoms,
                                                           const DQ &gravity)
 {
     int n_links = Psi.size();
@@ -92,7 +95,7 @@ VectorXd DQ_GaussPrinciple::_compute_gravitational_forces(const std::vector<Matr
     MatrixXd Z = MatrixXd(4, 4);
     for(int i=0; i<n_links;i++)
     {
-        DQ xcom = DQ(vec_xcoms[i]);
+        DQ xcom = xcoms.at(i);
         Z =  hamiplus4(xcom.P().conj())*haminus4(xcom.P());
         gravitational_forces = gravitational_forces + Jecom[i].block(4,0,4,n_links).transpose()*Z*vec4(Psi[i](7,7)*gravity);
 

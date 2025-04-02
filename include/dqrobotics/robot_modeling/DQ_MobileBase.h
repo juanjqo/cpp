@@ -23,13 +23,14 @@ Contributors:
 #ifndef DQ_ROBOTICS_ROBOT_MODELING_DQ_MOBILEBASE
 #define DQ_ROBOTICS_ROBOT_MODELING_DQ_MOBILEBASE
 
+#include "dqrobotics/robot_modeling/DQ_Dynamics.h"
 #include<dqrobotics/DQ.h>
 #include<dqrobotics/robot_modeling/DQ_Kinematics.h>
 
 namespace DQ_robotics
 {
 
-class DQ_MobileBase : public DQ_Kinematics
+class DQ_MobileBase : public DQ_Dynamics
 {
 protected:
     DQ frame_displacement_;
