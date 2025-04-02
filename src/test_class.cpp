@@ -42,25 +42,30 @@ int main(void)
     auto forces = gp_solver.compute_generalized_forces(q, q, q);
 
 
-    const auto end{std::chrono::steady_clock::now()};
+    auto end{std::chrono::steady_clock::now()};
     auto elapsed_seconds_ = std::chrono::duration<double>{end - initial_time_};
     std::cout<<"elapsed time: "<<elapsed_seconds_.count()*1e3<<" ms"<<std::endl;
 
 
-    VectorXd v1 = (VectorXd(3)<<1,2,3+DQ_robotics::DQ_threshold).finished();
-    VectorXd v2 = (VectorXd(3)<<1,2,3+DQ_robotics::DQ_threshold).finished();
-    VectorXd v3;
-
-    if (v1 == v2)
-    {
-        std::cout<<"Equal "<<std::endl;
-    }else
-    {
-        std::cout<<"Different "<<std::endl;
-    }
-    std::cout<<"size v3: "<<v3.size()<<std::endl;
+    //
+    initial_time_ = std::chrono::steady_clock::now();
+    auto M = gp_solver.compute_inertia_matrix(q);
+    end = std::chrono::steady_clock::now();
+    elapsed_seconds_ = std::chrono::duration<double>{end - initial_time_};
+    std::cout<<"elapsed time: "<<elapsed_seconds_.count()*1e3<<" ms"<<std::endl;
 
 
+    initial_time_ = std::chrono::steady_clock::now();
+    auto C = gp_solver.compute_coriolis_vector(q,q);
+    end = std::chrono::steady_clock::now();
+    elapsed_seconds_ = std::chrono::duration<double>{end - initial_time_};
+    std::cout<<"elapsed time: "<<elapsed_seconds_.count()*1e3<<" ms"<<std::endl;
+
+    initial_time_ = std::chrono::steady_clock::now();
+    auto g = gp_solver.compute_gravitational_forces_vector(q);
+    end = std::chrono::steady_clock::now();
+    elapsed_seconds_ = std::chrono::duration<double>{end - initial_time_};
+    std::cout<<"elapsed time: "<<elapsed_seconds_.count()*1e3<<" ms"<<std::endl;
 
 
     //std::cout<<"forces: "<<forces.transpose()<<std::endl;
