@@ -214,11 +214,5 @@ MatrixXd DQ_SerialManipulator::pose_jacobian_derivative(const VectorXd &q, const
     return DQ_Kinematics::pose_jacobian_derivative(q, q_dot);
 }
 
-
-std::tuple<DQ, MatrixXd, MatrixXd> DQ_SerialManipulator::_raw_kinematics(const VectorXd &q, const VectorXd &q_dot) const
-{
-    return _raw_kinematics(q, q_dot, get_dim_configuration_space()-1);
-}
-
 }//namespace DQ_robotics
 

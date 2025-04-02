@@ -8,7 +8,6 @@ namespace DQ_robotics
 DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics> &robot):
     DQ_DynamicsSolver(robot)
 {
-    //dh_chain_  = std::dynamic_pointer_cast<DQ_SerialManipulatorDH>(robot_);
     serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
     serial_whole_body_ = std::dynamic_pointer_cast<DQ_SerialWholeBody>(robot_);
     holonomic_base_ = std::dynamic_pointer_cast<DQ_HolonomicBase>(robot_);

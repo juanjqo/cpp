@@ -58,9 +58,6 @@ protected:
     std::shared_ptr<DQ_SerialWholeBody> serial_whole_body_;
     std::shared_ptr<DQ_HolonomicBase> holonomic_base_;
 
-    bool is_serial_manipulator_ = false;
-    bool is_serial_whole_body_ = false;
-    bool is_holonomic_base_ = false;
 public:
     DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
 

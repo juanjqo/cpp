@@ -72,9 +72,6 @@ public:
     virtual MatrixXd pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const override; //Override from DQ_Kinematics
     virtual MatrixXd pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot) const override; //Override from DQ_Kinematics
 
-    virtual std::tuple<DQ, MatrixXd, MatrixXd> _raw_kinematics(const VectorXd& q, const VectorXd& q_dot) const;
-    virtual std::tuple<DQ, MatrixXd, MatrixXd> _raw_kinematics(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const = 0;
-
 };
 
 }
