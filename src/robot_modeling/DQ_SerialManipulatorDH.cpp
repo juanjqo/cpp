@@ -64,10 +64,7 @@ DQ_SerialManipulatorDH::DQ_SerialManipulatorDH(const MatrixXd &dh_matrix,
         throw(std::range_error("Bad DQ_SerialManipulatorDH(dh_matrix) call: dh_matrix should be 5xn"));
     }
     dh_matrix_ = dh_matrix;
-    set_center_of_masses(center_of_masses);
-    set_inertia_tensors(inertia_tensors);
-    set_masses(masses);
-    _check_dim_inertial_parameters();
+    set_inertial_parameters(inertia_tensors, center_of_masses, masses);
 }
 
 /**

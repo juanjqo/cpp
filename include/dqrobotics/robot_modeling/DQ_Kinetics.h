@@ -35,6 +35,8 @@ private:
         if (parameters.size() == 0)
             throw std::runtime_error(error_msg);
     }
+    void _check_dim_inertial_parameters();
+
     std::vector<Matrix<double, 3,3>> inertia_tensors_;
     std::vector<Vector3d> center_of_masses_;
     std::vector<double> masses_;
@@ -42,7 +44,7 @@ private:
 
 protected:
 
-    void _check_dim_inertial_parameters();
+
     DQ_Kinetics();
 
 public:
@@ -52,9 +54,13 @@ public:
     std::vector<double>               get_masses() const;
     int                               get_number_of_bodies() const;
 
-    void set_inertia_tensors(const std::vector<Matrix<double,3,3>>& inertia_tensors);
-    void set_center_of_masses(const std::vector<Vector3d>& center_of_masses);
-    void set_masses(const std::vector<double>& masses);
+    //void set_inertia_tensors(const std::vector<Matrix<double,3,3>>& inertia_tensors);
+    //void set_center_of_masses(const std::vector<Vector3d>& center_of_masses);
+    //void set_masses(const std::vector<double>& masses);
+    void set_inertial_parameters(const std::vector<Matrix<double,3,3>>& inertia_tensors,
+                                 const std::vector<Vector3d>& center_of_masses,
+                                 const std::vector<double>& masses
+                                 );
 
 
 };

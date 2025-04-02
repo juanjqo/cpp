@@ -29,6 +29,14 @@ DQ_HolonomicBase::DQ_HolonomicBase()
     dim_configuration_space_ = 3;
 }
 
+DQ_HolonomicBase::DQ_HolonomicBase(const std::vector<Matrix<double,3,3> > &inertia_tensors,
+                                   const std::vector<Vector3d> &center_of_masses,
+                                   const std::vector<double> &masses)
+{
+    dim_configuration_space_ = 3;
+    set_inertial_parameters(inertia_tensors, center_of_masses, masses);
+}
+
 DQ DQ_HolonomicBase::raw_fkm(const VectorXd& q) const
 {
     const double& x   = q(0);

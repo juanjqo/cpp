@@ -15,13 +15,16 @@ int main(void)
       std::make_shared<DQ_SerialManipulatorMDH>(FrankaEmikaPandaRobot::dynamics())
         );
 
-    auto robot2 = std::static_pointer_cast<DQ_Dynamics>(
-        std::make_shared<DQ_HolonomicBase>()
-        );
+    std::vector<Matrix<double, 3,3>> rinertia_tensors = {MatrixXd::Identity(3,3)};
+    std::vector<Vector3d> center_of_masses = {(VectorXd(3) <<1,2,3).finished()};
+    std::vector<double> masses = {1.0};
+
+    auto robot2 = std::make_shared<DQ_HolonomicBase>(rinertia_tensors, center_of_masses, masses);
+
 
     auto robot3 = std::make_shared<DQ_SerialManipulatorMDH>(FrankaEmikaPandaRobot::dynamics());
 
-    auto gp_solver = DQ_GaussPrincipleSolver(robot);
+    auto gp_solver = DQ_GaussPrincipleSolver(robot2);
 
     std::cout<<"Gravity: "<<robot->get_gravity_acceleration()<<std::endl;
     std::cout<<"Bodies: "<<robot->get_number_of_bodies()<<std::endl;

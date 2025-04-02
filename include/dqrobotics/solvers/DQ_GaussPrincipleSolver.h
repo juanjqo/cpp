@@ -36,16 +36,17 @@ enum class ROBOT_TYPE
     };
     ROBOT_TYPE robot_type_;
 
-    bool _update_robot_configuration(const VectorXd &q);
-    bool _update_robot_configuration_velocities(const VectorXd &q_dot);
-    void _initialize_vectors();
+    bool _update_configuration(const VectorXd &q);
+    bool _update_configuration_velocities(const VectorXd &q_dot);
+    void _initialize_variables();
 
-protected:
 
-    void _compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot);
+    //void _compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot);
+    DQ get_fkm(const VectorXd &q, const int &to_ith_link);
 
-    void _compute_twist_jacobians(const VectorXd &q);
-    void _compute_twist_jacobian_derivatives(const VectorXd &q, const VectorXd &q_dot);
+    void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q);
+    void _compute_robot_dynamics(const VectorXd &q,
+                                 const VectorXd &q_dot);
 
     static MatrixXd twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose);
     static MatrixXd twist_jacobian_derivative(const MatrixXd &pose_jacobian,
