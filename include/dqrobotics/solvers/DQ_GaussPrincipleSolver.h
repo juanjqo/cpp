@@ -70,7 +70,7 @@ public:
 
     MatrixXd compute_inertia_matrix(const VectorXd& q) override;
     VectorXd compute_coriolis_vector(const VectorXd& q,
-                                 const VectorXd& q_dot) override;
+                                     const VectorXd& q_dot) override;
     VectorXd compute_gravitational_forces_vector(const VectorXd& q) override;
 };
 }

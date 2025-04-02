@@ -335,7 +335,7 @@ DQ  DQ_SerialManipulatorMDH::raw_fkm(const VectorXd& q_vec, const int& to_ith_li
     return q;
 }
 
-std::tuple<DQ, MatrixXd, MatrixXd> DQ_SerialManipulatorMDH::_raw_kinematics(const VectorXd &q,
+std::tuple<DQ, MatrixXd> DQ_SerialManipulatorMDH::_raw_kinematics(const VectorXd &q,
                                                                             const VectorXd &q_dot,
                                                                             const int &to_ith_link) const
 {
@@ -406,7 +406,7 @@ std::tuple<DQ, MatrixXd, MatrixXd> DQ_SerialManipulatorMDH::_raw_kinematics(cons
 
 
 
-    return {x_i.back(), J, J_dot};
+    return {x_i.back(), J};
 }
 
 
