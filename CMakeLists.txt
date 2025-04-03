@@ -217,3 +217,13 @@ INSTALL(FILES
 
 add_executable(test_class src/test_class.cpp)
 target_link_libraries(test_class dqrobotics)
+
+add_executable(min_example src/min_example.cpp)
+target_link_libraries(min_example
+    dqrobotics
+)
+
+add_executable(performance_test src/performance_test.cpp)
+target_link_libraries(performance_test
+    dqrobotics
+)

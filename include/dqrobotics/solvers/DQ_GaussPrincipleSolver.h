@@ -1,4 +1,5 @@
 #pragma once
+#include "dqrobotics/robot_modeling/DQ_DifferentialDriveRobot.h"
 #include<dqrobotics/DQ.h>
 #include<dqrobotics/robot_modeling/DQ_SerialManipulatorDH.h>
 #include<dqrobotics/robot_modeling/DQ_SerialManipulatorMDH.h>
@@ -25,6 +26,7 @@ protected:
     std::vector<DQ>  xcoms_;
     std::vector<DQ>  xs_;
     int n_links_;
+    int n_dim_space_;
 
     MatrixXd inertia_matrix_gp_;
     VectorXd coriolis_vector_gp_;
@@ -42,7 +44,10 @@ enum class ROBOT_TYPE
 
 
     //void _compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot);
-    DQ get_fkm(const VectorXd &q, const int &to_ith_link);
+    DQ _get_fkm(const VectorXd &q, const int &to_ith_link);
+    MatrixXd _get_pose_jacobian(const VectorXd &q, const int &to_ith_link);
+    MatrixXd _get_pose_jacobian_derivative(const VectorXd &q, const VectorXd &q_dot,
+                                           const int &to_ith_link);
 
     void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q);
     void _compute_robot_dynamics(const VectorXd &q,
@@ -58,6 +63,7 @@ enum class ROBOT_TYPE
     std::shared_ptr<DQ_SerialManipulator> serial_manipulator_;
     std::shared_ptr<DQ_SerialWholeBody> serial_whole_body_;
     std::shared_ptr<DQ_HolonomicBase> holonomic_base_;
+    std::shared_ptr<DQ_DifferentialDriveRobot> differential_base_;
 
 public:
     DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);

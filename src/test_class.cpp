@@ -1,3 +1,4 @@
+#include "dqrobotics/robot_modeling/DQ_DifferentialDriveRobot.h"
 #include <dqrobotics/DQ.h>
 #include <dqrobotics/robots/FrankaEmikaPandaRobot.h>
 #include <dqrobotics/solvers/DQ_GaussPrincipleSolver.h>
@@ -24,7 +25,9 @@ int main(void)
 
     auto robot3 = std::make_shared<DQ_SerialManipulatorMDH>(FrankaEmikaPandaRobot::dynamics());
 
-    auto gp_solver = DQ_GaussPrincipleSolver(robot2);
+    auto robot4 = std::make_shared<DQ_DifferentialDriveRobot>(0.1, 0.3);
+
+    auto gp_solver = DQ_GaussPrincipleSolver(robot3);
 
     std::cout<<"Gravity: "<<robot->get_gravity_acceleration()<<std::endl;
     std::cout<<"Bodies: "<<robot->get_number_of_bodies()<<std::endl;
@@ -37,9 +40,12 @@ int main(void)
     }
     */
     VectorXd q = (VectorXd(7) << 1,2,3,4,5,6,7).finished();
+    VectorXd q3 = (VectorXd(3) << 1,2,3).finished();
 
 
     auto initial_time_ = std::chrono::steady_clock::now();
+
+    //q = q3;
 
 
     auto forces = gp_solver.compute_generalized_forces(q, q, q);
