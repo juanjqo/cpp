@@ -198,6 +198,7 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(co
             //MatrixXd Ja = (Jecom_.at(i).block(4,0,4,n_dim_space_)).transpose();
             gravitational_forces_gp_ = gravitational_forces_gp_ + (Jecom_.at(i).block(4,0,4,n_dim_space_)).transpose()*Z*vec4(Psi_.at(i)(7,7)*gravity);
         }
+        gravitational_forces_gp_ = -1*gravitational_forces_gp_;
     }
 }
 

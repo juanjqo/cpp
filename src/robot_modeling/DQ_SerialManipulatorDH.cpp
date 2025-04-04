@@ -226,6 +226,24 @@ DQ  DQ_SerialManipulatorDH::raw_fkm(const VectorXd& q_vec, const int& to_ith_lin
     return q;
 }
 
+DQ DQ_SerialManipulatorDH::get_joint_twist(const int &ith) const
+{
+    return _get_w(ith);
+}
+
+double DQ_SerialManipulatorDH::get_generalized_joint_force(const DQ &wrench, const int &ith) const
+{
+    const int joint_type = int(dh_matrix_(4,ith));
+    if(joint_type == 0)
+    {
+        return double(dot(wrench, get_joint_twist(ith)).D());
+    }
+    else
+    {
+        return double(dot(wrench, get_joint_twist(ith)).P());
+    }
+}
+
 /**
  * @brief This method returns the pose Jacobian that satisfies vec(x_dot) = J * q_vec_dot,
  *        where x = fkm(q_vec) and q_vec is the vector of joint variables.

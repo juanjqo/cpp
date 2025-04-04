@@ -54,9 +54,9 @@ public:
     std::vector<double>               get_masses() const;
     int                               get_number_of_bodies() const;
 
-    //void set_inertia_tensors(const std::vector<Matrix<double,3,3>>& inertia_tensors);
-    //void set_center_of_masses(const std::vector<Vector3d>& center_of_masses);
-    //void set_masses(const std::vector<double>& masses);
+    void set_inertia_tensors(const std::vector<Matrix<double,3,3>>& inertia_tensors);
+    void set_center_of_masses(const std::vector<Vector3d>& center_of_masses);
+    void set_masses(const std::vector<double>& masses);
     void set_inertial_parameters(const std::vector<Matrix<double,3,3>>& inertia_tensors,
                                  const std::vector<Vector3d>& center_of_masses,
                                  const std::vector<double>& masses

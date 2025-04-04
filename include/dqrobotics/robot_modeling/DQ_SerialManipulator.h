@@ -72,6 +72,9 @@ public:
     virtual MatrixXd pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const override; //Override from DQ_Kinematics
     virtual MatrixXd pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot) const override; //Override from DQ_Kinematics
 
+
+    virtual DQ get_joint_twist(const int &ith) const = 0;
+    virtual double get_generalized_joint_force(const DQ& wrench, const int &ith) const = 0;
 };
 
 }

@@ -59,6 +59,9 @@ public:
     MatrixXd raw_pose_jacobian(const VectorXd& q_vec, const int& to_ith_link) const override;
     MatrixXd raw_pose_jacobian_derivative(const VectorXd& q, const VectorXd& q_dot, const int& to_ith_link) const override;
     DQ raw_fkm(const VectorXd &q_vec, const int &to_ith_link) const override;
+
+    DQ get_joint_twist(const int &ith) const override;
+    double get_generalized_joint_force(const DQ& wrench, const int &ith) const override;
 };
 
 }

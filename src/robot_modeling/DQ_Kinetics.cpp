@@ -49,7 +49,7 @@ int DQ_Kinetics::get_number_of_bodies() const
 {
     return number_of_bodies_;
 }
-/*
+
 void DQ_Kinetics::set_inertia_tensors(const std::vector<Matrix<double, 3, 3> > &inertia_tensors)
 {
     inertia_tensors_ = inertia_tensors;
@@ -64,7 +64,7 @@ void DQ_Kinetics::set_masses(const std::vector<double> &masses)
 {
     masses_ = masses;
 }
-*/
+
 void DQ_Kinetics::set_inertial_parameters(const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
                                           const std::vector<Vector3d> &center_of_masses,
                                           const std::vector<double> &masses)

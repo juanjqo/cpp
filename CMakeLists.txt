@@ -64,6 +64,7 @@ ADD_LIBRARY(dqrobotics SHARED
 
     src/solvers/DQ_DynamicsSolver.cpp
     src/solvers/DQ_GaussPrincipleSolver.cpp
+    src/solvers/DQ_NewtonEulerSolver.cpp
 
     src/robot_control/DQ_KinematicController.cpp
     src/robot_control/DQ_PseudoinverseController.cpp
@@ -149,6 +150,7 @@ INSTALL(FILES
     include/dqrobotics/solvers/DQ_QuadraticProgrammingSolver.h
     include/dqrobotics/solvers/DQ_DynamicsSolver.h
     include/dqrobotics/solvers/DQ_GaussPrincipleSolver.h
+    include/dqrobotics/solvers/DQ_NewtonEulerSolver.h
     DESTINATION "include/dqrobotics/solvers")
 
 ################################################################
@@ -213,6 +215,7 @@ INSTALL(FILES
 INSTALL(FILES
     src/solvers/DQ_DynamicsSolver.cpp
     src/solvers/DQ_GaussPrincipleSolver.cpp
+    src/solvers/DQ_NewtonEulerSolver.cpp
     DESTINATION "include/dqrobotics/solvers")
 
 add_executable(test_class src/test_class.cpp)
