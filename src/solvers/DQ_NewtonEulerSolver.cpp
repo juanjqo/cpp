@@ -100,9 +100,9 @@ DQ DQ_NewtonEulerSolver::_M3(const MatrixXd &inertia_tensor, const DQ &h)
 VectorXd DQ_NewtonEulerSolver::_compute_torques(const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot, const bool &fkm_flag)
 {
     int n_links = robot_->get_dim_configuration_space();
-    std::vector<DQ> xs;
-    std::vector<DQ> joint_twists;
-    std::vector<DQ> joint_twists_dot;
+    std::vector<DQ> xs(n_links, DQ(0));
+    std::vector<DQ> joint_twists(n_links, DQ(0));
+    std::vector<DQ> joint_twists_dot(n_links, DQ(0));
     VectorXd torques = VectorXd(n_links);
 
     if (fkm_flag == true)
@@ -110,18 +110,18 @@ VectorXd DQ_NewtonEulerSolver::_compute_torques(const VectorXd &q, const VectorX
         xs_ = xs;
         for(int i=0; i<n_links;i++)
         {
-            xs_.push_back(DQ(0));
-            xs_[i] = robot_->get_base_frame().conj()*robot_->fkm(q,i);
+            //xs_.push_back(DQ(0));
+            xs_.at(i) = robot_->get_base_frame().conj()*robot_->fkm(q,i);
         }
     }
 
     for(int i=0; i<n_links;i++)
     {
         //xs.push_back(DQ(0));
-        joint_twists.push_back(DQ(0));
-        joint_twists_dot.push_back(DQ(0));
-        joint_twists[i] =     q_dot(i)*serial_manipulator_ ->get_joint_twist(i);
-        joint_twists_dot[i] = q_dot_dot(i)*serial_manipulator_->get_joint_twist(i);
+        //joint_twists.push_back(DQ(0));
+        //joint_twists_dot.push_back(DQ(0));
+        joint_twists.at(i) =     q_dot(i)*serial_manipulator_ ->get_joint_twist(i);
+        joint_twists_dot.at(i) = q_dot_dot(i)*serial_manipulator_->get_joint_twist(i);
 
     }
 
