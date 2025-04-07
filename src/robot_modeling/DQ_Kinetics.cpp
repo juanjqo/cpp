@@ -33,7 +33,7 @@ std::vector<Matrix<double, 3, 3> > DQ_Kinetics::get_inertia_tensors() const
     return inertia_tensors_;
 }
 
-std::vector<Vector3d> DQ_Kinetics::get_center_of_masses() const
+std::vector<DQ> DQ_Kinetics::get_center_of_masses() const
 {
     _check_parameters(inertia_tensors_, "Bad call in get_center_of_masses(). The center of masses are not defined.");
     return center_of_masses_;
@@ -55,7 +55,7 @@ void DQ_Kinetics::set_inertia_tensors(const std::vector<Matrix<double, 3, 3> > &
     inertia_tensors_ = inertia_tensors;
 }
 
-void DQ_Kinetics::set_center_of_masses(const std::vector<Vector3d> &center_of_masses)
+void DQ_Kinetics::set_center_of_masses(const std::vector<DQ> &center_of_masses)
 {
     center_of_masses_ = center_of_masses;
 }
@@ -66,7 +66,7 @@ void DQ_Kinetics::set_masses(const std::vector<double> &masses)
 }
 
 void DQ_Kinetics::set_inertial_parameters(const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                          const std::vector<Vector3d> &center_of_masses,
+                                          const std::vector<DQ> &center_of_masses,
                                           const std::vector<double> &masses)
 {
     inertia_tensors_ = inertia_tensors;

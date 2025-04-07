@@ -40,6 +40,7 @@ int main(void)
     }
 
     std::vector<double> ts_gp(trials,0);
+    //std::vector<
     for (size_t i = 0; i<trials; i++)
     {
         auto initial_time_ = std::chrono::steady_clock::now();

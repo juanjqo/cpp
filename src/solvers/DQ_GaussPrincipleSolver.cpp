@@ -183,10 +183,12 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(co
         for(int i=0; i<n_links_;i++)
         {
             xs_.at(i) = _get_fkm(q, i);//robot_->fkm(q,i);
-            xcoms_.at(i) = xs_.at(i)*DQ(1,0,0,0,0, 0.5*center_of_masses_[i](0),
-                                                    0.5*center_of_masses_[i](1),
-                                                    0.5*center_of_masses_[i](2));
+            //xcoms_.at(i) = xs_.at(i)*DQ(1,0,0,0,0, 0.5*center_of_masses_[i](0),
+            //                                        0.5*center_of_masses_[i](1),
+            //                                        0.5*center_of_masses_[i](2));
 
+
+            xcoms_.at(i) =  xs_.at(i)*(1+0.5*E_*center_of_masses_.at(i));
             //J_aux.block(0,0,8,i+1) = _get_pose_jacobian(q,i);//robot_->pose_jacobian(q,i);
             //J_.at(i) = J_aux;
             J_.at(i) = _get_pose_jacobian(q,i);

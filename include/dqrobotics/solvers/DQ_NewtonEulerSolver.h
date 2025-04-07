@@ -8,7 +8,7 @@ class DQ_NewtonEulerSolver: public DQ_DynamicsSolver
 {
 private:
     std::vector<Matrix<double, 3,3>> inertia_tensors_;
-    std::vector<Vector3d> center_of_masses_;
+    std::vector<DQ> center_of_masses_;
     std::vector<double> masses_;
     int n_links_;
 

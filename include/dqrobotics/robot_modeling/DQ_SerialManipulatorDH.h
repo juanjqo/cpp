@@ -49,7 +49,7 @@ public:
     DQ_SerialManipulatorDH(const MatrixXd& dh_matrix);
     DQ_SerialManipulatorDH(const MatrixXd& dh_matrix,
                            const std::vector<Matrix<double, 3,3>> &inertia_tensors,
-                           const std::vector<Vector3d> &center_of_masses,
+                           const std::vector<DQ> &center_of_masses,
                            const std::vector<double> &masses);
 
     using DQ_SerialManipulator::raw_pose_jacobian;

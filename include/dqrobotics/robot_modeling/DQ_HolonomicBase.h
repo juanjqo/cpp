@@ -35,7 +35,7 @@ class DQ_HolonomicBase: public DQ_MobileBase
 public:
     DQ_HolonomicBase();
     DQ_HolonomicBase(const std::vector<Matrix<double,3,3> > &inertia_tensors,
-                     const std::vector<Vector3d> &center_of_masses,
+                     const std::vector<DQ> &center_of_masses,
                      const std::vector<double> &masses);
 
     //Virtual method overloads (DQ_Kinematics)

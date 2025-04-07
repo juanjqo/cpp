@@ -58,7 +58,7 @@ DQ_SerialManipulatorMDH::DQ_SerialManipulatorMDH(const MatrixXd& mdh_matrix):
 
 DQ_SerialManipulatorMDH::DQ_SerialManipulatorMDH(const MatrixXd &mdh_matrix,
                                                  const std::vector<Matrix<double,3,3> > &inertia_tensors,
-                                                 const std::vector<Vector3d> &center_of_masses,
+                                                 const std::vector<DQ> &center_of_masses,
                                                  const std::vector<double> &masses):
 DQ_SerialManipulator(mdh_matrix.cols())
 {

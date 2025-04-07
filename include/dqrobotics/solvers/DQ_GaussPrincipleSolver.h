@@ -15,7 +15,7 @@ class DQ_GaussPrincipleSolver: public DQ_DynamicsSolver
 {
 protected:
     std::vector<Matrix<double, 3,3>> inertia_tensors_;
-    std::vector<Vector3d> center_of_masses_;
+    std::vector<DQ> center_of_masses_;
     std::vector<double> masses_;
 
     std::vector<Matrix<double, 8,8>>  Psi_;

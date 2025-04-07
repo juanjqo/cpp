@@ -17,7 +17,7 @@ int main(void)
         );
 
     std::vector<Matrix<double, 3,3>> rinertia_tensors = {MatrixXd::Identity(3,3)};
-    std::vector<Vector3d> center_of_masses = {(VectorXd(3) <<1,2,3).finished()};
+    std::vector<DQ> center_of_masses = {DQ(1,2,3)};
     std::vector<double> masses = {1.0};
 
     auto robot2 = std::make_shared<DQ_HolonomicBase>(rinertia_tensors, center_of_masses, masses);

@@ -39,21 +39,23 @@ void DQ_NewtonEulerSolver::_forward_recursion(const std::vector<DQ> &xs, const s
         //frames_x_0_ci_.push_back(DQ(0));
 
         DQ x_0_to_i = xs.at(i); //fkm(q,i);
-        DQ x_i_to_ci = DQ(1,0,0,0,0, 0.5*center_of_masses_[i](0),
-                          0.5*center_of_masses_[i](1),
-                          0.5*center_of_masses_[i](2));
+
+        //DQ x_i_to_ci = DQ(1,0,0,0,0, 0.5*center_of_masses_[i](0),
+        //                  0.5*center_of_masses_[i](1),
+        //                  0.5*center_of_masses_[i](2));
+        DQ x_i_to_ci = 1 + 0.5*E_*center_of_masses_.at(i);
         DQ x_0_ci = x_0_to_i*x_i_to_ci;
 
         DQ x_ci_to_cim1 = x_0_ci.conj()*x_0_cim1;
         DQ x_ci_to_im1 =  x_0_ci.conj()*x_0_im1;
-        frames_x_ci_to_im1_[i] = x_ci_to_im1;
-        frames_x_im1_to_i_[i] = xi*x_0_to_i;
-        frames_x_0_ci_[i] = x_0_ci;
+        frames_x_ci_to_im1_.at(i) = x_ci_to_im1;
+        frames_x_im1_to_i_.at(i) = xi*x_0_to_i;
+        frames_x_0_ci_.at(i) = x_0_ci;
 
-        twisti = Ad(x_ci_to_cim1, twisti_im1) + Ad(x_ci_to_im1, joint_twists[i]);
+        twisti = Ad(x_ci_to_cim1, twisti_im1) + Ad(x_ci_to_im1, joint_twists.at(i));
 
-        twisti_dot = Ad(x_ci_to_cim1, twisti_dot) + Ad(x_ci_to_im1, joint_twists_dot[i])
-                     + cross(-Ad(x_ci_to_im1, joint_twists[i]), Ad(x_ci_to_cim1, twisti_im1));
+        twisti_dot = Ad(x_ci_to_cim1, twisti_dot) + Ad(x_ci_to_im1, joint_twists_dot.at(i))
+                     + cross(-Ad(x_ci_to_im1, joint_twists.at(i)), Ad(x_ci_to_cim1, twisti_im1));
 
         twists_.at(i) = twisti;
         twists_dot_.at(i) = twisti_dot;
