@@ -51,6 +51,7 @@ protected:
                               const VectorXd& q_dot_dot, const bool& fkm_flag = true);
 
     std::shared_ptr<DQ_SerialManipulator> serial_manipulator_;
+    std::shared_ptr<DQ_Dynamics> robot_;
 public:
     DQ_NewtonEulerSolver(const std::shared_ptr<DQ_Dynamics>& robot);
 

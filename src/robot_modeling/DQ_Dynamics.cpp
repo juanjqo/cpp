@@ -41,15 +41,21 @@ DQ DQ_Dynamics::get_gravity_acceleration() const
     return gravity_acceleration_;
 }
 
-/*
+void DQ_Dynamics::dynamic_solver(const std::shared_ptr<DQ_DynamicsSolver> &solver)
+{
+    dynamic_solver_ = solver;
+}
+
+
 VectorXd DQ_Dynamics::compute_generalized_forces(const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot)
 {
     if (!dynamic_solver_)
     {
         throw std::runtime_error("Undefined solver!");
     }
+    return VectorXd::Zero(1);
 }
-*/
+
 
 
 

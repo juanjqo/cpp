@@ -5,8 +5,8 @@
 namespace DQ_robotics
 {
 
-DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics> &robot):
-    DQ_DynamicsSolver(robot)
+DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver()
+
 {
     serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
     serial_whole_body_ = std::dynamic_pointer_cast<DQ_SerialWholeBody>(robot_);
@@ -52,9 +52,14 @@ DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynami
     _initialize_variables();
 }
 
+void DQ_GaussPrincipleSolver::_set_robot(const std::shared_ptr<DQ_Dynamics> &robot)
+{
+    robot_ = robot;
+}
+
 VectorXd DQ_GaussPrincipleSolver::compute_generalized_forces(const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot)
 {
-    _compute_robot_dynamics(q, q_dot);
+    _compute_robot_dynamics(q, q_dot, robot_->get_gravity_acceleration());
 
     return inertia_matrix_gp_*q_dot_dot + coriolis_vector_gp_ + gravitational_forces_gp_;
 }
@@ -166,7 +171,7 @@ MatrixXd DQ_GaussPrincipleSolver::twist_jacobian_derivative(const MatrixXd &pose
     return 2*hamiplus8(DQ(C8()*pose_jacobian*q_dot))*pose_jacobian+2*hamiplus8(pose.conj())*pose_jacobian_derivative;
 }
 
-void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(const VectorXd &q)
+void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(const VectorXd &q, const DQ &gravity)
 {
     if (_update_configuration(q))
     {
@@ -178,7 +183,7 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(co
         inertia_matrix_gp_ = MatrixXd::Zero(n_dim_space_,n_dim_space_);
         gravitational_forces_gp_ = VectorXd::Zero(n_dim_space_);
 
-        const DQ &gravity = robot_->get_gravity_acceleration();
+        //const DQ &gravity = robot_->get_gravity_acceleration();
 
         for(int i=0; i<n_links_;i++)
         {
@@ -204,9 +209,9 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(co
     }
 }
 
-void DQ_GaussPrincipleSolver::_compute_robot_dynamics(const VectorXd &q, const VectorXd &q_dot)
+void DQ_GaussPrincipleSolver::_compute_robot_dynamics(const VectorXd &q, const VectorXd &q_dot, const DQ &gravity)
 {
-    _compute_robot_dynamics_without_coriolis_effect(q);
+    _compute_robot_dynamics_without_coriolis_effect(q, gravity);
 
     if (_update_configuration_velocities(q_dot))
     {
@@ -237,19 +242,19 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics(const VectorXd &q, const V
 
 MatrixXd DQ_GaussPrincipleSolver::compute_inertia_matrix(const VectorXd& q)
 {
-    _compute_robot_dynamics_without_coriolis_effect(q);
+    _compute_robot_dynamics_without_coriolis_effect(q,  robot_->get_gravity_acceleration());
     return inertia_matrix_gp_;
 }
 
 VectorXd DQ_GaussPrincipleSolver::compute_coriolis_vector(const VectorXd&q, const VectorXd& q_dot)
 {
-    _compute_robot_dynamics(q, q_dot);
+    _compute_robot_dynamics(q, q_dot, robot_->get_gravity_acceleration());
     return coriolis_vector_gp_;
 }
 
 VectorXd DQ_GaussPrincipleSolver::compute_gravitational_forces_vector(const VectorXd& q)
 {
-    _compute_robot_dynamics_without_coriolis_effect(q);
+    _compute_robot_dynamics_without_coriolis_effect(q,  robot_->get_gravity_acceleration());
     return gravitational_forces_gp_;
 }
 

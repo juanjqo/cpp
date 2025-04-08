@@ -138,7 +138,7 @@ VectorXd DQ_NewtonEulerSolver::_compute_torques(const VectorXd &q, const VectorX
 }
 
 DQ_NewtonEulerSolver::DQ_NewtonEulerSolver(const std::shared_ptr<DQ_Dynamics> &robot):
-DQ_DynamicsSolver(robot)
+    robot_{robot}
 {
     inertia_tensors_ = robot_->get_inertia_tensors();
     center_of_masses_ = robot_->get_center_of_masses();

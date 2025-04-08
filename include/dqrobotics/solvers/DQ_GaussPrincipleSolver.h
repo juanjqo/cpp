@@ -32,6 +32,8 @@ protected:
     VectorXd coriolis_vector_gp_;
     VectorXd gravitational_forces_gp_;
 
+    std::shared_ptr<DQ_Dynamics> robot_;
+
 enum class ROBOT_TYPE
     {
         SERIAL_MANIPULATOR, SERIAL_WHOLE_BODY, HOLONOMIC_BASE
@@ -49,9 +51,10 @@ enum class ROBOT_TYPE
     MatrixXd _get_pose_jacobian_derivative(const VectorXd &q, const VectorXd &q_dot,
                                            const int &to_ith_link);
 
-    void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q);
+    void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q, const DQ& gravity);
     void _compute_robot_dynamics(const VectorXd &q,
-                                 const VectorXd &q_dot);
+                                 const VectorXd &q_dot,
+                                 const DQ& gravity);
 
     static MatrixXd twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose);
     static MatrixXd twist_jacobian_derivative(const MatrixXd &pose_jacobian,
@@ -66,7 +69,9 @@ enum class ROBOT_TYPE
     std::shared_ptr<DQ_DifferentialDriveRobot> differential_base_;
 
 public:
-    DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
+    DQ_GaussPrincipleSolver();
+
+    void _set_robot(const std::shared_ptr<DQ_Dynamics>& robot);
 
     VectorXd compute_generalized_forces(const VectorXd& q,
                                         const VectorXd& q_dot,

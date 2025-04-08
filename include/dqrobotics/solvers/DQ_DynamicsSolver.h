@@ -22,7 +22,7 @@ Contributors:
 
 #pragma once
 #include <dqrobotics/DQ.h>
-#include<dqrobotics/robot_modeling/DQ_Dynamics.h>
+//#include<dqrobotics/robot_modeling/DQ_Dynamics.h>
 #include<memory>
 #include<vector>
 
@@ -33,11 +33,12 @@ namespace DQ_robotics
 class DQ_DynamicsSolver
 {
 protected:
-   std::shared_ptr<DQ_Dynamics> robot_;
+   //std::shared_ptr<DQ_Dynamics> robot_;
    VectorXd q_;
    VectorXd dq_;
    VectorXd ddq_;
-   DQ_DynamicsSolver(const std::shared_ptr<DQ_Dynamics>& robot);
+   //DQ_DynamicsSolver(const std::shared_ptr<DQ_Dynamics>& robot);
+   DQ_DynamicsSolver();
 public:
    virtual VectorXd compute_generalized_forces(const VectorXd& q,
                                                const VectorXd& q_dot,

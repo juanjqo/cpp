@@ -27,7 +27,7 @@ int main(void)
 
     auto robot4 = std::make_shared<DQ_DifferentialDriveRobot>(0.1, 0.3);
 
-    auto gp_solver = DQ_GaussPrincipleSolver(robot3);
+    //auto gp_solver = DQ_GaussPrincipleSolver(robot3);
 
     std::cout<<"Gravity: "<<robot->get_gravity_acceleration()<<std::endl;
     std::cout<<"Bodies: "<<robot->get_number_of_bodies()<<std::endl;
