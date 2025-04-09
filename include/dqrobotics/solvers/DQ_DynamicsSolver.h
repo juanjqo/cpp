@@ -21,6 +21,7 @@ Contributors:
 */
 
 #pragma once
+#include "dqrobotics/robot_modeling/DQ_Kinematics.h"
 #include <dqrobotics/DQ.h>
 //#include<dqrobotics/robot_modeling/DQ_Dynamics.h>
 #include<memory>
@@ -33,7 +34,7 @@ namespace DQ_robotics
 class DQ_DynamicsSolver
 {
 protected:
-   //std::shared_ptr<DQ_Dynamics> robot_;
+   //std::shared_ptr<DQ_Kinematics> robot_;
    VectorXd q_;
    VectorXd dq_;
    VectorXd ddq_;

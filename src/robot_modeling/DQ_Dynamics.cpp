@@ -51,6 +51,7 @@ VectorXd DQ_Dynamics::compute_generalized_forces(const VectorXd &q, const Vector
 {
     if (!dynamic_solver_)
     {
+        //dynamic_solver_->_set
         throw std::runtime_error("Undefined solver!");
     }
     return VectorXd::Zero(1);

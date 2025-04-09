@@ -73,6 +73,8 @@ public:
 
     void _set_robot(const std::shared_ptr<DQ_Dynamics>& robot);
 
+    void set_algo(const std::vector<MatrixXd>& jacobians);
+
     VectorXd compute_generalized_forces(const VectorXd& q,
                                         const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot) override;

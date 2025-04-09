@@ -34,6 +34,7 @@ protected:
     DQ gravity_acceleration_ = -9.81*k_;
     std::shared_ptr<DQ_DynamicsSolver> dynamic_solver_;
     DQ_Dynamics();
+
 public:
     virtual ~DQ_Dynamics() = default;
     void set_gravity_acceleration(const DQ& gravity_acceleration);
