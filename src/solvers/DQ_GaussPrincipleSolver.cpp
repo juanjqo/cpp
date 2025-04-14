@@ -73,6 +73,7 @@ void DQ_GaussPrincipleSolver::_set_solver_parameters(const std::shared_ptr<DQ_Ki
         J_dot_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
         Jecom_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
         Jecom_dot_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
+        Z_ = std::vector<MatrixXd>(n_links_, MatrixXd::Zero(4,4));
         xcoms_ = std::vector<DQ>(n_links_, DQ(1));
         xs_  = std::vector<DQ>(n_links_, DQ(1));
         solver_parameters_set_ = true;
@@ -88,8 +89,10 @@ VectorXd DQ_GaussPrincipleSolver::compute_generalized_forces(const std::shared_p
                                                              const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot)
 {
     _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
-    _compute_robot_dynamics(q, q_dot, gravity);
 
+    _compute_inertia_matrix(q);
+    _compute_gravitational_forces(q, gravity);
+    _compute_robot_dynamics(q, q_dot, gravity);
     return inertia_matrix_gp_*q_dot_dot + coriolis_vector_gp_ + gravitational_forces_gp_;
 }
 
@@ -187,7 +190,7 @@ MatrixXd DQ_GaussPrincipleSolver::twist_jacobian_derivative(const MatrixXd &pose
     return 2*hamiplus8(DQ(C8()*pose_jacobian*q_dot))*pose_jacobian+2*hamiplus8(pose.conj())*pose_jacobian_derivative;
 }
 
-void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(const VectorXd &q, const DQ &gravity)
+void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(const VectorXd &q)
 {
     if (_update_configuration(q))
     {
@@ -203,37 +206,45 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(co
         for(int i=0; i<n_links_;i++)
         {
             xs_.at(i) = _get_fkm(q, i);//robot_->fkm(q,i);
-            //xcoms_.at(i) = xs_.at(i)*DQ(1,0,0,0,0, 0.5*center_of_masses_[i](0),
-            //                                        0.5*center_of_masses_[i](1),
-            //                                        0.5*center_of_masses_[i](2));
-
-
             xcoms_.at(i) =  xs_.at(i)*(1+0.5*E_*center_of_masses_.at(i));
-            //J_aux.block(0,0,8,i+1) = _get_pose_jacobian(q,i);//robot_->pose_jacobian(q,i);
-            //J_.at(i) = J_aux;
             J_.at(i) = _get_pose_jacobian(q,i);
 
             Jecom_.at(i) =     twist_jacobian(haminus8(xs_.at(i).conj()*xcoms_.at(i))*J_.at(i), xcoms_.at(i));
-            inertia_matrix_gp_ = inertia_matrix_gp_ + Jecom_.at(i).transpose()*Psi_.at(i)*Jecom_.at(i);
+            //inertia_matrix_gp_ = inertia_matrix_gp_ + Jecom_.at(i).transpose()*Psi_.at(i)*Jecom_.at(i);
 
-            Z =  hamiplus4(xcoms_.at(i).P().conj())*haminus4(xcoms_.at(i).P());
-            //MatrixXd Ja = (Jecom_.at(i).block(4,0,4,n_dim_space_)).transpose();
-            gravitational_forces_gp_ = gravitational_forces_gp_ + (Jecom_.at(i).block(4,0,4,n_dim_space_)).transpose()*Z*vec4(Psi_.at(i)(7,7)*gravity);
+            Z_.at(i) =  hamiplus4(xcoms_.at(i).P().conj())*haminus4(xcoms_.at(i).P());
+            //gravitational_forces_gp_ = gravitational_forces_gp_ + (Jecom_.at(i).block(4,0,4,n_dim_space_)).transpose()*Z*vec4(Psi_.at(i)(7,7)*gravity);
         }
-        gravitational_forces_gp_ = -1*gravitational_forces_gp_;
+        //gravitational_forces_gp_ = -1*gravitational_forces_gp_;
     }
+}
+
+void DQ_GaussPrincipleSolver::_compute_inertia_matrix(const VectorXd &q)
+{
+    _compute_robot_dynamics_without_coriolis_effect(q);
+    for(int i=0; i<n_links_;i++)
+        inertia_matrix_gp_ = inertia_matrix_gp_ + Jecom_.at(i).transpose()*Psi_.at(i)*Jecom_.at(i);
+
+}
+
+
+void DQ_GaussPrincipleSolver::_compute_gravitational_forces(const VectorXd &q, const DQ &gravity)
+{
+    _compute_robot_dynamics_without_coriolis_effect(q);
+    for(int i=0; i<n_links_;i++)
+        gravitational_forces_gp_ = gravitational_forces_gp_ + (Jecom_.at(i).block(4,0,4,n_dim_space_)).transpose()*Z_.at(i)*vec4(Psi_.at(i)(7,7)*gravity);
+    gravitational_forces_gp_ = -1*gravitational_forces_gp_;
 }
 
 void DQ_GaussPrincipleSolver::_compute_robot_dynamics(const VectorXd &q, const VectorXd &q_dot, const DQ &gravity)
 {
-    _compute_robot_dynamics_without_coriolis_effect(q, gravity);
+    _compute_robot_dynamics_without_coriolis_effect(q);
 
     if (_update_configuration_velocities(q_dot))
     {
         MatrixXd zeros_8_nlinks = MatrixXd::Zero(8, n_dim_space_);
         coriolis_vector_gp_ = VectorXd::Zero(n_dim_space_);
         MatrixXd S8 = MatrixXd::Zero(8, 8);
-
 
         for(int i=0; i<n_links_;i++)
         {
@@ -263,7 +274,8 @@ MatrixXd DQ_GaussPrincipleSolver::compute_inertia_matrix(const std::shared_ptr<D
                                                          const VectorXd& q)
 {
     _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
-    _compute_robot_dynamics_without_coriolis_effect(q,  gravity);
+    //_compute_robot_dynamics_without_coriolis_effect(q);
+    _compute_inertia_matrix(q);
     return inertia_matrix_gp_;
 }
 
@@ -284,10 +296,12 @@ VectorXd DQ_GaussPrincipleSolver::compute_gravitational_forces_vector(const std:
                                                                       const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
                                                                       const std::vector<DQ> &center_of_masses,
                                                                       const std::vector<double> &masses,
-                                                                      const DQ &gravity, const VectorXd& q)
+                                                                      const DQ &gravity,
+                                                                      const VectorXd& q)
 {
     _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
-    _compute_robot_dynamics_without_coriolis_effect(q,  gravity);
+    //_compute_robot_dynamics_without_coriolis_effect(q);
+    _compute_gravitational_forces(q, gravity);
     return gravitational_forces_gp_;
 }
 

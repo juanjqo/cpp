@@ -28,6 +28,7 @@ protected:
     std::vector<MatrixXd>  J_dot_;
     std::vector<MatrixXd>  Jecom_;
     std::vector<MatrixXd>  Jecom_dot_;
+    std::vector<MatrixXd>  Z_;
     std::vector<DQ>  xcoms_;
     std::vector<DQ>  xs_;
     int n_links_;
@@ -50,18 +51,24 @@ enum class ROBOT_TYPE
 
 
 
-    //void _compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot);
     DQ _get_fkm(const VectorXd &q, const int &to_ith_link);
     MatrixXd _get_pose_jacobian(const VectorXd &q, const int &to_ith_link);
     MatrixXd _get_pose_jacobian_derivative(const VectorXd &q, const VectorXd &q_dot,
                                            const int &to_ith_link);
 
-    void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q, const DQ& gravity);
+    void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q);
+
+    void _compute_inertia_matrix(const VectorXd &q);
+
+    void _compute_gravitational_forces(const VectorXd& q,
+                                       const DQ& gravity);
+
     void _compute_robot_dynamics(const VectorXd &q,
                                  const VectorXd &q_dot,
                                  const DQ& gravity);
 
     static MatrixXd twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose);
+
     static MatrixXd twist_jacobian_derivative(const MatrixXd &pose_jacobian,
                                               const MatrixXd &pose_jacobian_derivative,
                                               const DQ &pose,
@@ -72,8 +79,6 @@ enum class ROBOT_TYPE
     std::shared_ptr<DQ_SerialWholeBody> serial_whole_body_;
     std::shared_ptr<DQ_HolonomicBase> holonomic_base_;
     std::shared_ptr<DQ_DifferentialDriveRobot> differential_base_;
-
-
 
 public:
     //DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
@@ -95,6 +100,7 @@ public:
                                     const std::vector<double>& masses,
                                     const DQ& gravity,
                                     const VectorXd& q) override;
+
     VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& robot,
                                      const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
                                      const std::vector<DQ>& center_of_masses,
@@ -109,9 +115,6 @@ public:
                                                  const std::vector<double>& masses,
                                                  const DQ& gravity,
                                                  const VectorXd& q) override;
-
-
-
 
 };
 }
