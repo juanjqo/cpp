@@ -76,6 +76,7 @@ public:
                                     const std::vector<double> &masses,
                                     const DQ& gravity,
                                     const VectorXd& q) override;
+
     VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& robot,
                                      const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
                                      const std::vector<DQ> &center_of_masses,

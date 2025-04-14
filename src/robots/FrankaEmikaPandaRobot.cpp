@@ -184,13 +184,13 @@ DQ_SerialManipulatorMDH FrankaEmikaPandaRobot::dynamics()
                           -0.00167357, -0.000549074, 0.00491012).finished();
 
     std::vector<DQ> center_of_masses(7);
-    center_of_masses[0] = DQ(0.00359005, 0.00207575, -2.93732e-07);
-    center_of_masses[1] = DQ(-0.00342111, -0.0287195, 0.00349458);
-    center_of_masses[2] = DQ(0.0272627, 0.0392118, -0.0664985);
-    center_of_masses[3] = DQ(-0.0533997, 0.104436, 0.0275176);
-    center_of_masses[4] = DQ(-0.0123109, 0.0410224, -0.0384166);
-    center_of_masses[5] = DQ(0.0599899, -0.0141342, -0.0104707);
-    center_of_masses[6] = DQ(0.0103629, -0.00420036, -0.0453707);
+    center_of_masses[0] = DQ(0, 0.00359005, 0.00207575, -2.93732e-07);
+    center_of_masses[1] = DQ(0, -0.00342111, -0.0287195, 0.00349458);
+    center_of_masses[2] = DQ(0, 0.0272627, 0.0392118, -0.0664985);
+    center_of_masses[3] = DQ(0, -0.0533997, 0.104436, 0.0275176);
+    center_of_masses[4] = DQ(0, -0.0123109, 0.0410224, -0.0384166);
+    center_of_masses[5] = DQ(0, 0.0599899, -0.0141342, -0.0104707);
+    center_of_masses[6] = DQ(0, 0.0103629, -0.00420036, -0.0453707);
 
     std::vector<double> masses = {4.97068, 0.646926,   3.2286,  3.58789,  1.22595,  1.66656, 0.735522};
 

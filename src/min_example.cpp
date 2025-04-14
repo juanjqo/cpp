@@ -12,9 +12,9 @@ int main(void)
     auto robot = std::make_shared<DQ_SerialManipulatorMDH>
         (FrankaEmikaPandaRobot::dynamics());
 
-    auto q      = (VectorXd(7) << 1,2,3,4,0,0,0).finished();
-    auto q_dot  = (VectorXd(7) << 0,0,0,5,6,7,8).finished();
-    auto q_ddot = (VectorXd(7) << -1,0,-4,0,0,0,0).finished();
+    const auto q      = (VectorXd(7) << 1,2,3,4,0,0,0).finished();
+    const auto q_dot  = (VectorXd(7) << 0,0,0,5,6,7,8).finished();
+    const auto q_ddot = (VectorXd(7) << -1,0,-4,0,0,0,0).finished();
 
     //Gauss Principle of Least Constraint solver
 
@@ -32,6 +32,7 @@ int main(void)
     robot2->dynamic_solver(std::make_shared<DQ_NewtonEulerSolver>());
     //std::cout<<"error: "<<(forces-robot2->compute_generalized_forces(q, q_dot, q_ddot)).transpose()<<std::endl;
     std::cout<<(robot2->compute_generalized_forces(q, q_dot, q_ddot)).transpose()<<std::endl;
+    // -2.02579  -22.8425   2.63973   6.05451   1.74369 -0.171619 -0.724505
 }
 
 
