@@ -13,10 +13,15 @@ namespace DQ_robotics
 {
 class DQ_GaussPrincipleSolver: public DQ_DynamicsSolver
 {
+private:
+    void _set_solver_parameters(const std::shared_ptr<DQ_Kinematics>& robot,
+                                const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                const std::vector<DQ> &center_of_masses,
+                                const std::vector<double> &masses);
+    bool solver_parameters_set_{false};
+
 protected:
-    std::vector<Matrix<double, 3,3>> inertia_tensors_;
-    std::vector<DQ> center_of_masses_;
-    std::vector<double> masses_;
+
 
     std::vector<Matrix<double, 8,8>>  Psi_;
     std::vector<MatrixXd>  J_;
@@ -32,7 +37,7 @@ protected:
     VectorXd coriolis_vector_gp_;
     VectorXd gravitational_forces_gp_;
 
-    std::shared_ptr<DQ_Dynamics> robot_;
+
 
 enum class ROBOT_TYPE
     {
@@ -42,7 +47,7 @@ enum class ROBOT_TYPE
 
     bool _update_configuration(const VectorXd &q);
     bool _update_configuration_velocities(const VectorXd &q_dot);
-    void _initialize_variables();
+
 
 
     //void _compute_euler_lagrange(const VectorXd &q, const VectorXd &q_dot);
@@ -68,17 +73,46 @@ enum class ROBOT_TYPE
     std::shared_ptr<DQ_HolonomicBase> holonomic_base_;
     std::shared_ptr<DQ_DifferentialDriveRobot> differential_base_;
 
-public:
-    DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
 
-    VectorXd compute_generalized_forces(const VectorXd& q,
+
+public:
+    //DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
+    //virtual ~DQ_GaussPrincipleSolver();
+    DQ_GaussPrincipleSolver();
+
+    VectorXd compute_generalized_forces(const std::shared_ptr<DQ_Kinematics>& robot,
+                                        const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
+                                        const std::vector<DQ>& center_of_masses,
+                                        const std::vector<double>& masses,
+                                        const DQ& gravity,
+                                        const VectorXd& q,
                                         const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot) override;
 
-    MatrixXd compute_inertia_matrix(const VectorXd& q) override;
-    VectorXd compute_coriolis_vector(const VectorXd& q,
+    MatrixXd compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& robot,
+                                    const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
+                                    const std::vector<DQ>& center_of_masses,
+                                    const std::vector<double>& masses,
+                                    const DQ& gravity,
+                                    const VectorXd& q) override;
+    VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& robot,
+                                     const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
+                                     const std::vector<DQ>& center_of_masses,
+                                     const std::vector<double>& masses,
+                                     const DQ& gravity,
+                                     const VectorXd& q,
                                      const VectorXd& q_dot) override;
-    VectorXd compute_gravitational_forces_vector(const VectorXd& q) override;
+
+    VectorXd compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics>& robot,
+                                                 const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
+                                                 const std::vector<DQ>& center_of_masses,
+                                                 const std::vector<double>& masses,
+                                                 const DQ& gravity,
+                                                 const VectorXd& q) override;
+
+
+
+
 };
 }
 

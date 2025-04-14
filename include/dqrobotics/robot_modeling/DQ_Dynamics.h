@@ -45,15 +45,16 @@ public:
     void set_gravity_acceleration(const DQ& gravity_acceleration);
     DQ get_gravity_acceleration() const;
 
-    void dynamic_solver(const SOLVER& solver);
+    void dynamic_solver(const std::shared_ptr<DQ_DynamicsSolver>& solver);
+
     VectorXd compute_generalized_forces(const VectorXd& q,
                                         const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot);
 
-   // MatrixXd compute_inertia_matrix(const VectorXd& q);
-  //  VectorXd compute_coriolis_vector(const VectorXd& q,
-   //                                  const VectorXd& q_dot);
-  //  VectorXd compute_gravitational_forces_vector(const VectorXd& q);
+    MatrixXd compute_inertia_matrix(const VectorXd& q);
+    VectorXd compute_coriolis_vector(const VectorXd& q,
+                                     const VectorXd& q_dot);
+    VectorXd compute_gravitational_forces_vector(const VectorXd& q);
 
 };
 }

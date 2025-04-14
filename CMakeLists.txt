@@ -122,7 +122,7 @@ INSTALL(FILES
     include/dqrobotics/robot_modeling/DQ_SerialWholeBody.h
     include/dqrobotics/robot_modeling/DQ_Kinetics.h
     include/dqrobotics/robot_modeling/DQ_Dynamics.h
-    include/dqrobotics/robot_modeling/DQ_GaussPrinciple.h
+    #include/dqrobotics/robot_modeling/DQ_GaussPrinciple.h
     DESTINATION "include/dqrobotics/robot_modeling")
 
 # robot_control headers
@@ -198,7 +198,7 @@ INSTALL(FILES
     src/robot_modeling/DQ_SerialWholeBody.cpp
     src/robot_modeling/DQ_Kinetics.cpp
     src/robot_modeling/DQ_Dynamics.cpp
-    src/robot_modeling/DQ_GaussPrinciple.cpp
+    #src/robot_modeling/DQ_GaussPrinciple.cpp
     DESTINATION "src/dqrobotics/robot_modeling")
 
 # robots folder

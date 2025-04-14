@@ -4,59 +4,91 @@
 
 namespace DQ_robotics
 {
-
-DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics> &robot):
-    robot_{robot}
+/*
+DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics> &robot)
 
 {
-    serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
-    serial_whole_body_ = std::dynamic_pointer_cast<DQ_SerialWholeBody>(robot_);
-    holonomic_base_ = std::dynamic_pointer_cast<DQ_HolonomicBase>(robot_);
-    differential_base_ = std::dynamic_pointer_cast<DQ_DifferentialDriveRobot>(robot_);
+    _set_solver_parameters(robot);
+}*/
+
+DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver()
+{
+
+}
+
+void DQ_GaussPrincipleSolver::_set_solver_parameters(const std::shared_ptr<DQ_Kinematics>& robot,
+                                                     const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                     const std::vector<DQ> &center_of_masses,
+                                                     const std::vector<double> &masses)
+{
+    if (!solver_parameters_set_)
+    {
+        robot_ = robot;
+        serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
+        serial_whole_body_ = std::dynamic_pointer_cast<DQ_SerialWholeBody>(robot_);
+        holonomic_base_ = std::dynamic_pointer_cast<DQ_HolonomicBase>(robot_);
+        differential_base_ = std::dynamic_pointer_cast<DQ_DifferentialDriveRobot>(robot_);
+
+        if (serial_manipulator_)
+        {
+            robot_type_ = ROBOT_TYPE::SERIAL_MANIPULATOR;
+        }else if (serial_whole_body_)
+        {
+            robot_type_ = ROBOT_TYPE::SERIAL_WHOLE_BODY;
+            throw std::runtime_error("Serial Whole body robots are unsupported!");
+        }else if(holonomic_base_)
+        {
+            if(differential_base_)
+                throw std::runtime_error("Differential robots are unsupported!");
+            robot_type_ = ROBOT_TYPE::HOLONOMIC_BASE;
+        }else{
+            throw std::runtime_error("Wrong robot type in DQ_GaussPrincipleSolver.");
+        }
+
+        inertia_tensors_ = inertia_tensors;
+        center_of_masses_ = center_of_masses;
+        masses_ = masses;
+        n_links_ = masses_.size();
+        n_dim_space_ = robot_->get_dim_configuration_space();
+        MatrixXd zeros_8xn = MatrixXd::Zero(8, n_links_);
+        for(int i=0; i<n_links_;i++)
+        {
+            auto I = inertia_tensors_[i];
+            Psi_.push_back((MatrixXd(8,8) << 0,       0,        0,       0,   0,         0,          0,          0,
+                            0,  I(0,0),   I(0,1),   I(0,2),  0,         0,          0,          0,
+                            0,  I(1,0),   I(1,1),   I(1,2),  0,         0,          0,          0,
+                            0,  I(2,0),   I(2,1),   I(2,2),  0,         0,          0,          0,
+                            0,       0,        0,        0,  0,         0,          0,          0,
+                            0,       0,        0,        0,  0, masses_[i],          0,          0,
+                            0,       0,        0,        0,  0,         0,  masses_[i],          0,
+                            0,       0,        0,        0,  0,         0,          0,   masses_[i]).finished());
+        }
+
+        MatrixXd zeros_8_nlinks = MatrixXd::Zero(8, n_dim_space_);
+        MatrixXd J_aux = MatrixXd::Zero(8, n_dim_space_);
+        MatrixXd J_aux_dot = MatrixXd::Zero(8, n_dim_space_);
 
 
-
-    if (serial_manipulator_)
-    {
-        robot_type_ = ROBOT_TYPE::SERIAL_MANIPULATOR;
-    }else if (serial_whole_body_)
-    {
-        robot_type_ = ROBOT_TYPE::SERIAL_WHOLE_BODY;
-        throw std::runtime_error("Serial Whole body robots are unsupported!");
-    }else if(holonomic_base_)
-    {
-        if(differential_base_)
-            throw std::runtime_error("Differential robots are unsupported!");
-        robot_type_ = ROBOT_TYPE::HOLONOMIC_BASE;
-    }else{
-        throw std::runtime_error("Wrong robot type in DQ_GaussPrincipleSolver.");
+        J_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
+        J_dot_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
+        Jecom_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
+        Jecom_dot_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
+        xcoms_ = std::vector<DQ>(n_links_, DQ(1));
+        xs_  = std::vector<DQ>(n_links_, DQ(1));
+        solver_parameters_set_ = true;
     }
-
-    inertia_tensors_ = robot_->get_inertia_tensors();
-    center_of_masses_ = robot_->get_center_of_masses();
-    masses_ = robot_->get_masses();
-    n_links_ = masses_.size();
-    n_dim_space_ = robot_->get_dim_configuration_space();
-    MatrixXd zeros_8xn = MatrixXd::Zero(8, n_links_);
-    for(int i=0; i<n_links_;i++)
-    {
-        auto I = inertia_tensors_[i];
-        Psi_.push_back((MatrixXd(8,8) << 0,       0,        0,       0,   0,         0,          0,          0,
-                        0,  I(0,0),   I(0,1),   I(0,2),  0,         0,          0,          0,
-                        0,  I(1,0),   I(1,1),   I(1,2),  0,         0,          0,          0,
-                        0,  I(2,0),   I(2,1),   I(2,2),  0,         0,          0,          0,
-                        0,       0,        0,        0,  0,         0,          0,          0,
-                        0,       0,        0,        0,  0, masses_[i],          0,          0,
-                        0,       0,        0,        0,  0,         0,  masses_[i],          0,
-                        0,       0,        0,        0,  0,         0,          0,   masses_[i]).finished());
-    }
-    _initialize_variables();
 }
 
 
-VectorXd DQ_GaussPrincipleSolver::compute_generalized_forces(const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot)
+VectorXd DQ_GaussPrincipleSolver::compute_generalized_forces(const std::shared_ptr<DQ_Kinematics> &robot,
+                                                             const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                             const std::vector<DQ> &center_of_masses,
+                                                             const std::vector<double> &masses,
+                                                             const DQ &gravity,
+                                                             const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot)
 {
-    _compute_robot_dynamics(q, q_dot, robot_->get_gravity_acceleration());
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
+    _compute_robot_dynamics(q, q_dot, gravity);
 
     return inertia_matrix_gp_*q_dot_dot + coriolis_vector_gp_ + gravitational_forces_gp_;
 }
@@ -95,20 +127,7 @@ bool DQ_GaussPrincipleSolver::_update_configuration_velocities(const VectorXd &q
     return update_performed;
 }
 
-void DQ_GaussPrincipleSolver::_initialize_variables()
-{
-    MatrixXd zeros_8_nlinks = MatrixXd::Zero(8, n_dim_space_);
-    MatrixXd J_aux = MatrixXd::Zero(8, n_dim_space_);
-    MatrixXd J_aux_dot = MatrixXd::Zero(8, n_dim_space_);
 
-
-    J_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
-    J_dot_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
-    Jecom_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
-    Jecom_dot_ = std::vector<MatrixXd>(n_links_, zeros_8_nlinks);
-    xcoms_ = std::vector<DQ>(n_links_, DQ(1));
-    xs_  = std::vector<DQ>(n_links_, DQ(1));
-}
 
 DQ DQ_GaussPrincipleSolver::_get_fkm(const VectorXd &q, const int &to_ith_link)
 {
@@ -180,7 +199,6 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics_without_coriolis_effect(co
         inertia_matrix_gp_ = MatrixXd::Zero(n_dim_space_,n_dim_space_);
         gravitational_forces_gp_ = VectorXd::Zero(n_dim_space_);
 
-        //const DQ &gravity = robot_->get_gravity_acceleration();
 
         for(int i=0; i<n_links_;i++)
         {
@@ -237,21 +255,39 @@ void DQ_GaussPrincipleSolver::_compute_robot_dynamics(const VectorXd &q, const V
     }
 }
 
-MatrixXd DQ_GaussPrincipleSolver::compute_inertia_matrix(const VectorXd& q)
+MatrixXd DQ_GaussPrincipleSolver::compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics> &robot,
+                                                         const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                         const std::vector<DQ> &center_of_masses,
+                                                         const std::vector<double> &masses,
+                                                         const DQ &gravity,
+                                                         const VectorXd& q)
 {
-    _compute_robot_dynamics_without_coriolis_effect(q,  robot_->get_gravity_acceleration());
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
+    _compute_robot_dynamics_without_coriolis_effect(q,  gravity);
     return inertia_matrix_gp_;
 }
 
-VectorXd DQ_GaussPrincipleSolver::compute_coriolis_vector(const VectorXd&q, const VectorXd& q_dot)
+VectorXd DQ_GaussPrincipleSolver::compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics> &robot,
+                                                          const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                          const std::vector<DQ> &center_of_masses,
+                                                          const std::vector<double> &masses,
+                                                          const DQ &gravity,
+                                                          const VectorXd&q,
+                                                          const VectorXd& q_dot)
 {
-    _compute_robot_dynamics(q, q_dot, robot_->get_gravity_acceleration());
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
+    _compute_robot_dynamics(q, q_dot, gravity);
     return coriolis_vector_gp_;
 }
 
-VectorXd DQ_GaussPrincipleSolver::compute_gravitational_forces_vector(const VectorXd& q)
+VectorXd DQ_GaussPrincipleSolver::compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics> &robot,
+                                                                      const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                                      const std::vector<DQ> &center_of_masses,
+                                                                      const std::vector<double> &masses,
+                                                                      const DQ &gravity, const VectorXd& q)
 {
-    _compute_robot_dynamics_without_coriolis_effect(q,  robot_->get_gravity_acceleration());
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
+    _compute_robot_dynamics_without_coriolis_effect(q,  gravity);
     return gravitational_forces_gp_;
 }
 

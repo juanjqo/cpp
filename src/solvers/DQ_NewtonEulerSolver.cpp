@@ -4,6 +4,28 @@
 namespace DQ_robotics
 {
 
+void DQ_NewtonEulerSolver::_set_solver_parameters(const std::shared_ptr<DQ_Kinematics> &robot,
+                                                  const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                  const std::vector<DQ> &center_of_masses,
+                                                  const std::vector<double> &masses)
+{
+    if (!solver_parameters_set_)
+    {
+        robot_ = robot;
+        inertia_tensors_ = inertia_tensors;
+        center_of_masses_ = center_of_masses;
+        masses_ = masses;
+        n_links_ = masses_.size();
+        n_dim_space_ = robot_->get_dim_configuration_space();
+        serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
+        if(!serial_manipulator_)
+        {
+            throw std::runtime_error("DQ_NewtonEulerSolver only supports serial manipulators");
+        }
+    }
+}
+
+
 std::vector<DQ> DQ_NewtonEulerSolver::_compute_wrenches_ne(const std::vector<DQ> &xs,
                                                            const std::vector<DQ> &joint_twists,
                                                            const std::vector<DQ> &joint_twists_dot,
@@ -99,7 +121,7 @@ DQ DQ_NewtonEulerSolver::_M3(const MatrixXd &inertia_tensor, const DQ &h)
     return ret;
 }
 
-VectorXd DQ_NewtonEulerSolver::_compute_torques(const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot, const bool &fkm_flag)
+VectorXd DQ_NewtonEulerSolver::_compute_torques(const DQ &gravity, const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot, const bool &fkm_flag)
 {
     int n_links = robot_->get_dim_configuration_space();
     std::vector<DQ> xs(n_links, DQ(0));
@@ -127,48 +149,46 @@ VectorXd DQ_NewtonEulerSolver::_compute_torques(const VectorXd &q, const VectorX
 
     }
 
-    auto wrenches = _compute_wrenches_ne(xs_, joint_twists,
-                                                         joint_twists_dot,
-                                                         robot_->get_gravity_acceleration());
+    auto wrenches = _compute_wrenches_ne(xs_, joint_twists, joint_twists_dot, gravity);
     for(int i=0; i<n_links;i++)
-    {
         torques[i] = serial_manipulator_ ->get_generalized_joint_force(wrenches[i], i);
-    }
+
     return torques;
 }
 
-DQ_NewtonEulerSolver::DQ_NewtonEulerSolver(const std::shared_ptr<DQ_Dynamics> &robot):
-    robot_{robot}
-{
-    inertia_tensors_ = robot_->get_inertia_tensors();
-    center_of_masses_ = robot_->get_center_of_masses();
-    masses_ = robot_->get_masses();
-    n_links_ = masses_.size();
-    n_dim_space_ = robot_->get_dim_configuration_space();
-    serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
-    if(!serial_manipulator_)
-    {
-        throw std::runtime_error("DQ_NewtonEulerSolver only supports serial manipulators");
-    }
-}
+DQ_NewtonEulerSolver::DQ_NewtonEulerSolver()
+{}
 
-VectorXd DQ_NewtonEulerSolver::compute_generalized_forces(const VectorXd &q,
-                                                          const VectorXd &q_dot,
-                                                          const VectorXd &q_dot_dot)
+
+VectorXd DQ_NewtonEulerSolver::compute_generalized_forces(const std::shared_ptr<DQ_Kinematics>& robot,
+                                                          const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                          const std::vector<DQ> &center_of_masses,
+                                                          const std::vector<double> &masses,
+                                                          const DQ& gravity,
+                                                          const VectorXd& q,
+                                                          const VectorXd& q_dot,
+                                                          const VectorXd& q_dot_dot)
 {
-    return _compute_torques(q, q_dot, q_dot_dot, true);
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
+    return _compute_torques(gravity, q, q_dot, q_dot_dot, true);
 
 }
 
-MatrixXd DQ_NewtonEulerSolver::compute_inertia_matrix(const VectorXd &q)
+MatrixXd DQ_NewtonEulerSolver::compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& robot,
+                                                      const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                      const std::vector<DQ> &center_of_masses,
+                                                      const std::vector<double> &masses,
+                                                      const DQ& gravity,
+                                                      const VectorXd& q)
 {
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
     const int size = q.size();
     VectorXd zeros = VectorXd::Zero(size);
     MatrixXd I =  MatrixXd::Identity(size, size);
     MatrixXd M = MatrixXd(size, size);
     for (int i=0;i<size;i++)
     {
-        M.block(0,i, size, 1) = _compute_torques(q, zeros, I.col(i), false);  // I.col(i)
+        M.block(0,i, size, 1) = _compute_torques(gravity, q, zeros, I.col(i), false);  // I.col(i)
 
     }
     inertia_matrix_ = M;
@@ -176,24 +196,33 @@ MatrixXd DQ_NewtonEulerSolver::compute_inertia_matrix(const VectorXd &q)
 
 }
 
-VectorXd DQ_NewtonEulerSolver::compute_coriolis_vector(const VectorXd &q, const VectorXd &q_dot)
+VectorXd DQ_NewtonEulerSolver::compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& robot,
+                                                       const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                       const std::vector<DQ> &center_of_masses,
+                                                       const std::vector<double> &masses,
+                                                       const DQ& gravity,
+                                                       const VectorXd& q,
+                                                       const VectorXd& q_dot)
 {
-
-    VectorXd zeros = VectorXd::Zero(q.size());
-    auto gravity = robot_->get_gravity_acceleration();
-    robot_->set_gravity_acceleration(DQ(0)); // Gravity must be set to zero for the calculation of 'c(q,q_dot)' and 'M(q)'.
-    coriolis_vector_ = _compute_torques(q, q_dot, zeros, false);
-    robot_->set_gravity_acceleration(gravity);
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
+    VectorXd zeros = VectorXd::Zero(q.size()); // Gravity must be set to zero for the calculation of 'c(q,q_dot)' and 'M(q)'.
+    coriolis_vector_ = _compute_torques(DQ(0), q, q_dot, zeros, false);
     return coriolis_vector_;
 }
 
-VectorXd DQ_NewtonEulerSolver::compute_gravitational_forces_vector(const VectorXd &q)
+VectorXd DQ_NewtonEulerSolver::compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics>& robot,
+                                                                   const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
+                                                                   const std::vector<DQ> &center_of_masses,
+                                                                   const std::vector<double> &masses,
+                                                                   const DQ& gravity,
+                                                                   const VectorXd& q)
 {
     //auto gravity = robot_->get_gravity_acceleration();
     //robot_->set_gravity_acceleration(DQ(0));
+    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
     const int size = q.size();
     VectorXd zeros = VectorXd::Zero(size);
-    VectorXd torques = _compute_torques(q, zeros, zeros, true);
+    VectorXd torques = _compute_torques(gravity, q, zeros, zeros, true);
     //robot_->set_gravity_acceleration(gravity);
     return torques;
 }
