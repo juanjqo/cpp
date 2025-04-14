@@ -69,11 +69,7 @@ enum class ROBOT_TYPE
     std::shared_ptr<DQ_DifferentialDriveRobot> differential_base_;
 
 public:
-    DQ_GaussPrincipleSolver();
-
-    void _set_robot(const std::shared_ptr<DQ_Dynamics>& robot);
-
-    void set_algo(const std::vector<MatrixXd>& jacobians);
+    DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics>& robot);
 
     VectorXd compute_generalized_forces(const VectorXd& q,
                                         const VectorXd& q_dot,

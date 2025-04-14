@@ -5,7 +5,8 @@
 namespace DQ_robotics
 {
 
-DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver()
+DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver(const std::shared_ptr<DQ_Dynamics> &robot):
+    robot_{robot}
 
 {
     serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
@@ -52,10 +53,6 @@ DQ_GaussPrincipleSolver::DQ_GaussPrincipleSolver()
     _initialize_variables();
 }
 
-void DQ_GaussPrincipleSolver::_set_robot(const std::shared_ptr<DQ_Dynamics> &robot)
-{
-    robot_ = robot;
-}
 
 VectorXd DQ_GaussPrincipleSolver::compute_generalized_forces(const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot)
 {

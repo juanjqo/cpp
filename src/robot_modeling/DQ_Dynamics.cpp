@@ -20,11 +20,15 @@ Contributors:
 - Juan Jose Quiroz Omana (juanjose.quirozomana@manchester.ac.uk)
 */
 
+#include "dqrobotics/solvers/DQ_GaussPrincipleSolver.h"
+#include "dqrobotics/solvers/DQ_NewtonEulerSolver.h"
 #include <dqrobotics/robot_modeling/DQ_Dynamics.h>
 
 namespace DQ_robotics
 {
+
 DQ_Dynamics::DQ_Dynamics() {}
+
 
 void DQ_Dynamics::set_gravity_acceleration(const DQ &gravity_acceleration)
 {
@@ -41,9 +45,16 @@ DQ DQ_Dynamics::get_gravity_acceleration() const
     return gravity_acceleration_;
 }
 
-void DQ_Dynamics::dynamic_solver(const std::shared_ptr<DQ_DynamicsSolver> &solver)
+void DQ_Dynamics::dynamic_solver(const SOLVER &solver)
 {
-    dynamic_solver_ = solver;
+    //dynamic_solver_ = solver;
+    switch (solver) {
+    case SOLVER::NEWTON_EULER:
+        dynamic_solver_ = std::make_shared<DQ_NewtonEulerSolver>(shared_from_this());
+    case SOLVER::GAUSS_PRINCIPLE:
+        dynamic_solver_ = std::make_shared<DQ_GaussPrincipleSolver>(shared_from_this());
+        break;
+    }
 }
 
 
@@ -54,7 +65,7 @@ VectorXd DQ_Dynamics::compute_generalized_forces(const VectorXd &q, const Vector
         //dynamic_solver_->_set
         throw std::runtime_error("Undefined solver!");
     }
-    return VectorXd::Zero(1);
+    return dynamic_solver_->compute_generalized_forces(q, q_dot, q_dot_dot);
 }
 
 

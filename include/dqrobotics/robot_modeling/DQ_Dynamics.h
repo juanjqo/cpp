@@ -28,8 +28,13 @@ Contributors:
 
 namespace DQ_robotics
 {
-class DQ_Dynamics: public DQ_Kinematics, public DQ_Kinetics
+class DQ_Dynamics: public DQ_Kinematics, public DQ_Kinetics, public std::enable_shared_from_this<DQ_Dynamics>
 {
+public:
+    enum class SOLVER{
+        NEWTON_EULER,
+        GAUSS_PRINCIPLE
+    };
 protected:
     DQ gravity_acceleration_ = -9.81*k_;
     std::shared_ptr<DQ_DynamicsSolver> dynamic_solver_;
@@ -40,7 +45,7 @@ public:
     void set_gravity_acceleration(const DQ& gravity_acceleration);
     DQ get_gravity_acceleration() const;
 
-    void dynamic_solver(const std::shared_ptr<DQ_DynamicsSolver>& solver);
+    void dynamic_solver(const SOLVER& solver);
     VectorXd compute_generalized_forces(const VectorXd& q,
                                         const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot);
