@@ -187,10 +187,7 @@ MatrixXd DQ_NewtonEulerSolver::compute_inertia_matrix(const std::shared_ptr<DQ_K
     MatrixXd I =  MatrixXd::Identity(size, size);
     MatrixXd M = MatrixXd(size, size);
     for (int i=0;i<size;i++)
-    {
         M.block(0,i, size, 1) = _compute_torques(gravity, q, zeros, I.col(i), false);  // I.col(i)
-
-    }
     inertia_matrix_ = M;
     return inertia_matrix_;
 

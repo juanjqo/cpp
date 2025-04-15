@@ -24,8 +24,8 @@ int main(void)
     list_time_ne.open("time_ne.csv");
 
     auto robot = std::make_shared<DQ_SerialManipulatorMDH>(FrankaEmikaPandaRobot::dynamics());
-    auto gp_solver = DQ_GaussPrincipleSolver(robot);
-    auto ne_solver = DQ_NewtonEulerSolver(robot);
+    auto gp_solver =  std::make_shared<DQ_GaussPrincipleSolver>();
+    auto ne_solver =  std::make_shared<DQ_NewtonEulerSolver>();
 
     const int trials = 10000;
     const int n = robot->get_dim_configuration_space();
@@ -41,10 +41,11 @@ int main(void)
 
     std::vector<double> ts_gp(trials,0);
     //std::vector<
+    robot->dynamic_solver(gp_solver);
     for (size_t i = 0; i<trials; i++)
     {
         auto initial_time_ = std::chrono::steady_clock::now();
-        auto forces = gp_solver.compute_generalized_forces(q_list.at(i), q_dot_list.at(i), q_ddot_list.at(i));
+        auto forces = robot->compute_generalized_forces(q_list.at(i), q_dot_list.at(i), q_ddot_list.at(i));
         auto end{std::chrono::steady_clock::now()};
         auto elapsed_seconds_ = std::chrono::duration<double>{end - initial_time_};
         ts_gp.at(i) = elapsed_seconds_.count();
@@ -54,10 +55,11 @@ int main(void)
     std::cout<<"GP Mean time: "<<get_average(ts_gp)*1e3<<" (ms) ±"<<std::sqrt(get_variance(ts_gp))*1e3<<" (ms)"<<std::endl;
 
     std::vector<double> ts_ne(trials,0);
+    robot->dynamic_solver(ne_solver);
     for (size_t i = 0; i<trials; i++)
     {
         auto initial_time_ = std::chrono::steady_clock::now();
-        auto forces = ne_solver.compute_generalized_forces(q_list.at(i), q_dot_list.at(i), q_ddot_list.at(i));
+        auto forces = robot->compute_generalized_forces(q_list.at(i), q_dot_list.at(i), q_ddot_list.at(i));
         auto end{std::chrono::steady_clock::now()};
         auto elapsed_seconds_ = std::chrono::duration<double>{end - initial_time_};
         ts_ne.at(i) = elapsed_seconds_.count();

@@ -11,6 +11,7 @@ int main(void)
 {
     auto robot = std::make_shared<DQ_SerialManipulatorMDH>
         (FrankaEmikaPandaRobot::dynamics());
+    //robot->set_gravity_acceleration(DQ{0});
 
     const auto q      = (VectorXd(7) << 1,2,3,4,0,0,0).finished();
     const auto q_dot  = (VectorXd(7) << 0,0,0,5,6,7,8).finished();
@@ -28,6 +29,7 @@ int main(void)
 
     auto robot2 = std::make_shared<DQ_SerialManipulatorMDH>
         (FrankaEmikaPandaRobot::dynamics());
+    //robot2->set_gravity_acceleration(DQ{0});
 
     robot2->dynamic_solver(std::make_shared<DQ_NewtonEulerSolver>());
     //std::cout<<"error: "<<(forces-robot2->compute_generalized_forces(q, q_dot, q_ddot)).transpose()<<std::endl;

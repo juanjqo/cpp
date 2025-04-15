@@ -38,6 +38,9 @@ protected:
     VectorXd coriolis_vector_gp_;
     VectorXd gravitational_forces_gp_;
 
+    DQ default_gravity_{-9.81*k_};
+    DQ current_gravity_;
+
 
 
 enum class ROBOT_TYPE
@@ -48,6 +51,7 @@ enum class ROBOT_TYPE
 
     bool _update_configuration(const VectorXd &q);
     bool _update_configuration_velocities(const VectorXd &q_dot);
+    bool _update_gravity(const DQ& gravity);
 
 
 
@@ -56,16 +60,16 @@ enum class ROBOT_TYPE
     MatrixXd _get_pose_jacobian_derivative(const VectorXd &q, const VectorXd &q_dot,
                                            const int &to_ith_link);
 
-    void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q);
+    //void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q);
 
-    void _compute_inertia_matrix(const VectorXd &q);
+    void _compute_first_order_components(const VectorXd &q, const DQ& gravity);
+    void _compute_second_order_components(const VectorXd &q, const VectorXd &q_dot);
 
-    void _compute_gravitational_forces(const VectorXd& q,
-                                       const DQ& gravity);
 
-    void _compute_robot_dynamics(const VectorXd &q,
-                                 const VectorXd &q_dot,
-                                 const DQ& gravity);
+
+    //void _compute_robot_dynamics(const VectorXd &q,
+    //                             const VectorXd &q_dot,
+    //                             const DQ& gravity);
 
     static MatrixXd twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose);
 

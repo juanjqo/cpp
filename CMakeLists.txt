@@ -226,7 +226,7 @@ target_link_libraries(min_example
     dqrobotics
 )
 
-#add_executable(performance_test src/performance_test.cpp)
-#target_link_libraries(performance_test
-#    dqrobotics
-#)
+add_executable(performance_test src/performance_test.cpp)
+target_link_libraries(performance_test
+    dqrobotics
+)
