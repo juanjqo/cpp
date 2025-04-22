@@ -53,7 +53,7 @@ protected:
     int n_dim_space_;
     std::vector<DQ> xs_;
 
-    VectorXd _compute_torques(const DQ& gravity, const VectorXd& q, const VectorXd& q_dot,
+    VectorXd _compute_torques(const std::shared_ptr<DQ_Kinematics>& kinematics, const DQ& gravity, const VectorXd& q, const VectorXd& q_dot,
                               const VectorXd& q_dot_dot, const bool& fkm_flag = true);
 
     std::shared_ptr<DQ_SerialManipulator> serial_manipulator_;
@@ -62,33 +62,24 @@ public:
     DQ_NewtonEulerSolver();
 
     VectorXd compute_generalized_forces(const std::shared_ptr<DQ_Kinematics>& robot,
-                                        const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                        const std::vector<DQ> &center_of_masses,
-                                        const std::vector<double> &masses,
+                                        const std::shared_ptr<DQ_Kinetics>& kinetics,
                                         const DQ& gravity,
                                         const VectorXd& q,
                                         const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot) override;
 
-    MatrixXd compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& robot,
-                                    const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                    const std::vector<DQ> &center_of_masses,
-                                    const std::vector<double> &masses,
+    MatrixXd compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                    const std::shared_ptr<DQ_Kinetics>& kinetics,
                                     const DQ& gravity,
                                     const VectorXd& q) override;
 
-    VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& robot,
-                                     const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                     const std::vector<DQ> &center_of_masses,
-                                     const std::vector<double> &masses,
-                                     const DQ& gravity,
+    VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                     const std::shared_ptr<DQ_Kinetics>& kinetics,
                                      const VectorXd& q,
                                      const VectorXd& q_dot) override;
 
-    VectorXd compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics> &robot,
-                                                 const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                                 const std::vector<DQ> &center_of_masses,
-                                                 const std::vector<double> &masses,
+    VectorXd compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                                 const std::shared_ptr<DQ_Kinetics>& kinetics,
                                                  const DQ &gravity,
                                                  const VectorXd& q) override;
 };

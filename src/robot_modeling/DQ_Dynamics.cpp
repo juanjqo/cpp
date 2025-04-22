@@ -20,8 +20,7 @@ Contributors:
 - Juan Jose Quiroz Omana (juanjose.quirozomana@manchester.ac.uk)
 */
 
-#include "dqrobotics/solvers/DQ_GaussPrincipleSolver.h"
-#include "dqrobotics/solvers/DQ_NewtonEulerSolver.h"
+
 #include <dqrobotics/robot_modeling/DQ_Dynamics.h>
 
 namespace DQ_robotics
@@ -68,9 +67,7 @@ VectorXd DQ_Dynamics::compute_generalized_forces(const VectorXd &q, const Vector
         throw std::runtime_error("Bad call in DQ_Dynamics::compute_generalized_forces: Undefined solver!");
 
     return dynamic_solver_->compute_generalized_forces(shared_from_this(),
-                                                       shared_from_this()->get_inertia_tensors(),
-                                                       shared_from_this()->get_center_of_masses(),
-                                                       shared_from_this()->get_masses(),
+                                                       shared_from_this(),
                                                        shared_from_this()->get_gravity_acceleration(),
                                                        q,
                                                        q_dot,
@@ -82,9 +79,7 @@ MatrixXd DQ_Dynamics::compute_inertia_matrix(const VectorXd &q)
     if (!dynamic_solver_)
         throw std::runtime_error("Bad call in DQ_Dynamics::compute_inertia_matrix: Undefined solver!");
     return dynamic_solver_->compute_inertia_matrix(shared_from_this(),
-                                                   shared_from_this()->get_inertia_tensors(),
-                                                   shared_from_this()->get_center_of_masses(),
-                                                   shared_from_this()->get_masses(),
+                                                   shared_from_this(),
                                                    shared_from_this()->get_gravity_acceleration(),
                                                    q);
 }
@@ -94,10 +89,7 @@ VectorXd DQ_Dynamics::compute_coriolis_vector(const VectorXd &q, const VectorXd 
     if (!dynamic_solver_)
         throw std::runtime_error("Bad call in DQ_Dynamics::compute_coriolis_vector: Undefined solver!");
     return dynamic_solver_->compute_coriolis_vector(shared_from_this(),
-                                                    shared_from_this()->get_inertia_tensors(),
-                                                    shared_from_this()->get_center_of_masses(),
-                                                    shared_from_this()->get_masses(),
-                                                    shared_from_this()->get_gravity_acceleration(),
+                                                    shared_from_this(),
                                                     q,
                                                     q_dot);
 }
@@ -107,9 +99,7 @@ VectorXd DQ_Dynamics::compute_gravitational_forces_vector(const VectorXd &q)
     if (!dynamic_solver_)
         throw std::runtime_error("Bad call in DQ_Dynamics::compute_gravitational_forces_vector: Undefined solver!");
     return dynamic_solver_->compute_gravitational_forces_vector(shared_from_this(),
-                                                                shared_from_this()->get_inertia_tensors(),
-                                                                shared_from_this()->get_center_of_masses(),
-                                                                shared_from_this()->get_masses(),
+                                                                shared_from_this(),
                                                                 shared_from_this()->get_gravity_acceleration(),
                                                                 q);
 }

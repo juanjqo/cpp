@@ -27,6 +27,7 @@ int main(void)
     auto c = robot->compute_coriolis_vector(q, q_dot);
     auto g = robot->compute_gravitational_forces_vector(q);
 
+
     auto robot2 = std::make_shared<DQ_SerialManipulatorMDH>
         (FrankaEmikaPandaRobot::dynamics());
     //robot2->set_gravity_acceleration(DQ{0});
@@ -35,6 +36,7 @@ int main(void)
     //std::cout<<"error: "<<(forces-robot2->compute_generalized_forces(q, q_dot, q_ddot)).transpose()<<std::endl;
     std::cout<<(robot2->compute_generalized_forces(q, q_dot, q_ddot)).transpose()<<std::endl;
     // -2.02579  -22.8425   2.63973   6.05451   1.74369 -0.171619 -0.724505
+
 }
 
 

@@ -21,47 +21,23 @@ void DQ_GaussPrincipleSolver::_set_solver_parameters(const std::shared_ptr<DQ_Ki
                                                      const std::vector<DQ> &center_of_masses,
                                                      const std::vector<double> &masses)
 {
-    if (!solver_parameters_set_)
-    {
-        robot_ = robot;
-        serial_manipulator_ = std::dynamic_pointer_cast<DQ_SerialManipulator>(robot_);
-        serial_whole_body_ = std::dynamic_pointer_cast<DQ_SerialWholeBody>(robot_);
-        holonomic_base_ = std::dynamic_pointer_cast<DQ_HolonomicBase>(robot_);
-        differential_base_ = std::dynamic_pointer_cast<DQ_DifferentialDriveRobot>(robot_);
-
-        if (serial_manipulator_)
-        {
-            robot_type_ = ROBOT_TYPE::SERIAL_MANIPULATOR;
-        }else if (serial_whole_body_)
-        {
-            robot_type_ = ROBOT_TYPE::SERIAL_WHOLE_BODY;
-            throw std::runtime_error("Serial Whole body robots are unsupported!");
-        }else if(holonomic_base_)
-        {
-            if(differential_base_)
-                throw std::runtime_error("Differential robots are unsupported!");
-            robot_type_ = ROBOT_TYPE::HOLONOMIC_BASE;
-        }else{
-            throw std::runtime_error("Wrong robot type in DQ_GaussPrincipleSolver.");
-        }
-
         inertia_tensors_ = inertia_tensors;
         center_of_masses_ = center_of_masses;
         masses_ = masses;
         n_links_ = masses_.size();
-        n_dim_space_ = robot_->get_dim_configuration_space();
+        n_dim_space_ = robot->get_dim_configuration_space();
         MatrixXd zeros_8xn = MatrixXd::Zero(8, n_links_);
         for(int i=0; i<n_links_;i++)
         {
-            auto I = inertia_tensors_[i];
+            auto I = inertia_tensors_.at(i);
             Psi_.push_back((MatrixXd(8,8) << 0,       0,        0,       0,   0,         0,          0,          0,
                             0,  I(0,0),   I(0,1),   I(0,2),  0,         0,          0,          0,
                             0,  I(1,0),   I(1,1),   I(1,2),  0,         0,          0,          0,
                             0,  I(2,0),   I(2,1),   I(2,2),  0,         0,          0,          0,
                             0,       0,        0,        0,  0,         0,          0,          0,
-                            0,       0,        0,        0,  0, masses_[i],          0,          0,
-                            0,       0,        0,        0,  0,         0,  masses_[i],          0,
-                            0,       0,        0,        0,  0,         0,          0,   masses_[i]).finished());
+                            0,       0,        0,        0,  0, masses_.at(i),          0,          0,
+                            0,       0,        0,        0,  0,         0,  masses_.at(i),          0,
+                            0,       0,        0,        0,  0,         0,          0,   masses_.at(i)).finished());
         }
 
         MatrixXd zeros_8_nlinks = MatrixXd::Zero(8, n_dim_space_);
@@ -76,21 +52,44 @@ void DQ_GaussPrincipleSolver::_set_solver_parameters(const std::shared_ptr<DQ_Ki
         Z_ = std::vector<MatrixXd>(n_links_, MatrixXd::Zero(4,4));
         xcoms_ = std::vector<DQ>(n_links_, DQ(1));
         xs_  = std::vector<DQ>(n_links_, DQ(1));
-        solver_parameters_set_ = true;
+}
+
+DQ_GaussPrincipleSolver::ROBOT_TYPE DQ_GaussPrincipleSolver::_get_robot_type(const std::shared_ptr<DQ_Kinematics> &kinematics)
+{
+    auto serial_manipulator = std::dynamic_pointer_cast<DQ_SerialManipulator>(kinematics);
+    auto serial_whole_body  = std::dynamic_pointer_cast<DQ_SerialWholeBody>(kinematics);
+    auto holonomic_base     = std::dynamic_pointer_cast<DQ_HolonomicBase>(kinematics);
+    auto differential_base  = std::dynamic_pointer_cast<DQ_DifferentialDriveRobot>(kinematics);
+    ROBOT_TYPE robot_type;
+
+    if (serial_manipulator)
+    {
+        robot_type = ROBOT_TYPE::SERIAL_MANIPULATOR;
+    }else if (serial_whole_body)
+    {
+        robot_type = ROBOT_TYPE::SERIAL_WHOLE_BODY;
+        throw std::runtime_error("Serial Whole body robots are unsupported!");
+    }else if(holonomic_base)
+    {
+        if(differential_base)
+            throw std::runtime_error("Differential robots are unsupported!");
+        robot_type = ROBOT_TYPE::HOLONOMIC_BASE;
+    }else{
+        throw std::runtime_error("Wrong robot type in DQ_GaussPrincipleSolver.");
     }
+    return robot_type;
 }
 
 
-VectorXd DQ_GaussPrincipleSolver::compute_generalized_forces(const std::shared_ptr<DQ_Kinematics> &robot,
-                                                             const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                                             const std::vector<DQ> &center_of_masses,
-                                                             const std::vector<double> &masses,
-                                                             const DQ &gravity,
+VectorXd DQ_GaussPrincipleSolver::compute_generalized_forces(const std::shared_ptr<DQ_Kinematics> &kinematics, const std::shared_ptr<DQ_Kinetics> &kinetics, const DQ &gravity,
                                                              const VectorXd &q, const VectorXd &q_dot, const VectorXd &q_dot_dot)
 {
-    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
-    _compute_first_order_components(q, gravity);
-    _compute_second_order_components(q, q_dot);
+    _set_solver_parameters(kinematics,
+                           kinetics->get_inertia_tensors(),
+                           kinetics->get_center_of_masses(),
+                           kinetics->get_masses());
+    _compute_first_order_components(kinematics, q, gravity);
+    _compute_second_order_components(kinematics, q, q_dot);
     return inertia_matrix_gp_*q_dot_dot + coriolis_vector_gp_ + gravitational_forces_gp_;
 }
 
@@ -128,61 +127,52 @@ bool DQ_GaussPrincipleSolver::_update_configuration_velocities(const VectorXd &q
     return update_performed;
 }
 
-bool DQ_GaussPrincipleSolver::_update_gravity(const DQ &gravity)
+
+
+
+DQ DQ_GaussPrincipleSolver::_get_fkm(const std::shared_ptr<DQ_Kinematics> &kinematics, const VectorXd &q, const int &to_ith_link)
 {
-    bool update_performed{false};
-    if (current_gravity_ != gravity)
-    {
-        current_gravity_ = gravity;
-        update_performed = true;
-    }
-    return update_performed;
-}
-
-
-
-DQ DQ_GaussPrincipleSolver::_get_fkm(const VectorXd &q, const int &to_ith_link)
-{
-    switch (robot_type_) {
+    switch (_get_robot_type(kinematics)) {
 
     case ROBOT_TYPE::SERIAL_MANIPULATOR:
-        return robot_->fkm(q, to_ith_link);
+        return kinematics->fkm(q, to_ith_link);
     case ROBOT_TYPE::SERIAL_WHOLE_BODY:
         throw std::runtime_error("Serial Whole body robots are not supported yet!");
     case ROBOT_TYPE::HOLONOMIC_BASE:
-        return robot_->fkm(q,2);
+        return kinematics->fkm(q,2);
     }
 }
 
-MatrixXd DQ_GaussPrincipleSolver::_get_pose_jacobian(const VectorXd &q, const int &to_ith_link)
+MatrixXd DQ_GaussPrincipleSolver::_get_pose_jacobian(const std::shared_ptr<DQ_Kinematics> &kinematics, const VectorXd &q, const int &to_ith_link)
 {
     MatrixXd J_aux = MatrixXd::Zero(8, n_dim_space_);
 
-    switch (robot_type_) {
+    switch (_get_robot_type(kinematics)) {
     case ROBOT_TYPE::SERIAL_MANIPULATOR:
-        J_aux.block(0,0,8,to_ith_link+1) = robot_->pose_jacobian(q, to_ith_link);
+        J_aux.block(0,0,8,to_ith_link+1) = kinematics->pose_jacobian(q, to_ith_link);
         return J_aux;
     case ROBOT_TYPE::SERIAL_WHOLE_BODY:
         throw std::runtime_error("Serial Whole body robots are not supported yet!");
     case ROBOT_TYPE::HOLONOMIC_BASE:
-        J_aux.block(0,0,8,n_dim_space_) = robot_->pose_jacobian(q,2);//robot_->pose_jacobian(q,i);
+        J_aux.block(0,0,8,n_dim_space_) = kinematics->pose_jacobian(q,2);//robot_->pose_jacobian(q,i);
         return J_aux;
     }
 }
 
-MatrixXd DQ_GaussPrincipleSolver::_get_pose_jacobian_derivative(const VectorXd &q,
+MatrixXd DQ_GaussPrincipleSolver::_get_pose_jacobian_derivative(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                                                const VectorXd &q,
                                                                 const VectorXd &q_dot,
                                                                 const int &to_ith_link)
 {
     MatrixXd J_aux_dot = MatrixXd::Zero(8, n_dim_space_);
-    switch (robot_type_){
+    switch (_get_robot_type(kinematics)){
     case ROBOT_TYPE::SERIAL_MANIPULATOR:
-         J_aux_dot.block(0,0,8,to_ith_link+1) = robot_->pose_jacobian_derivative(q, q_dot, to_ith_link);
+         J_aux_dot.block(0,0,8,to_ith_link+1) = kinematics->pose_jacobian_derivative(q, q_dot, to_ith_link);
          return J_aux_dot;
     case ROBOT_TYPE::SERIAL_WHOLE_BODY:
         throw std::runtime_error("Serial Whole body robots are not supported yet!");
     case ROBOT_TYPE::HOLONOMIC_BASE:
-        J_aux_dot.block(0,0,8,n_dim_space_) = robot_->pose_jacobian_derivative(q, q_dot,2);
+        J_aux_dot.block(0,0,8,n_dim_space_) = kinematics->pose_jacobian_derivative(q, q_dot,2);
         return J_aux_dot;
     }
 }
@@ -201,7 +191,7 @@ MatrixXd DQ_GaussPrincipleSolver::twist_jacobian_derivative(const MatrixXd &pose
 
 
 
-void DQ_GaussPrincipleSolver::_compute_second_order_components(const VectorXd &q, const VectorXd &q_dot)
+void DQ_GaussPrincipleSolver::_compute_second_order_components(const std::shared_ptr<DQ_Kinematics> &kinematics, const VectorXd &q, const VectorXd &q_dot)
 {
     if (_update_configuration_velocities(q_dot))
     {
@@ -212,7 +202,7 @@ void DQ_GaussPrincipleSolver::_compute_second_order_components(const VectorXd &q
         for(int i=0; i<n_links_;i++)
         {
             //J_aux_dot.block(0,0,8,i+1) = _get_pose_jacobian_derivative(q, q_dot, i); //robot_->pose_jacobian_derivative(q, q_dot,i);
-            J_dot_.at(i) = _get_pose_jacobian_derivative(q, q_dot, i);//J_aux_dot;
+            J_dot_.at(i) = _get_pose_jacobian_derivative(kinematics, q, q_dot, i);//J_aux_dot;
             Jecom_dot_.at(i) = twist_jacobian_derivative(haminus8(xs_.at(i).conj()*xcoms_.at(i))*J_.at(i),
                                                          haminus8(xs_.at(i).conj()*xcoms_.at(i))*J_dot_.at(i),
                                                          xcoms_.at(i), q_dot);
@@ -229,7 +219,7 @@ void DQ_GaussPrincipleSolver::_compute_second_order_components(const VectorXd &q
     }
 }
 
-void DQ_GaussPrincipleSolver::_compute_first_order_components(const VectorXd &q, const DQ &gravity)
+void DQ_GaussPrincipleSolver::_compute_first_order_components(const std::shared_ptr<DQ_Kinematics> &kinematics, const VectorXd &q, const DQ &gravity)
 {
     if (_update_configuration(q))
     {
@@ -243,9 +233,9 @@ void DQ_GaussPrincipleSolver::_compute_first_order_components(const VectorXd &q,
 
         for(int i=0; i<n_links_;i++)
         {
-            xs_.at(i) = _get_fkm(q, i);//robot_->fkm(q,i);
+            xs_.at(i) = _get_fkm(kinematics, q, i);//robot_->fkm(q,i);
             xcoms_.at(i) =  xs_.at(i)*(1+0.5*E_*center_of_masses_.at(i));
-            J_.at(i) = _get_pose_jacobian(q,i);
+            J_.at(i) = _get_pose_jacobian(kinematics, q,i);
 
             Jecom_.at(i) =     twist_jacobian(haminus8(xs_.at(i).conj()*xcoms_.at(i))*J_.at(i), xcoms_.at(i));
             inertia_matrix_gp_ = inertia_matrix_gp_ + Jecom_.at(i).transpose()*Psi_.at(i)*Jecom_.at(i);
@@ -268,41 +258,43 @@ void DQ_GaussPrincipleSolver::_compute_first_order_components(const VectorXd &q,
 
 
 
-MatrixXd DQ_GaussPrincipleSolver::compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics> &robot,
-                                                         const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                                         const std::vector<DQ> &center_of_masses,
-                                                         const std::vector<double> &masses,
+MatrixXd DQ_GaussPrincipleSolver::compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                                         const std::shared_ptr<DQ_Kinetics>& kinetics,
                                                          const DQ &gravity,
                                                          const VectorXd& q)
 {
-    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
-    _compute_first_order_components(q, gravity);
+    _set_solver_parameters(kinematics,
+                           kinetics->get_inertia_tensors(),
+                           kinetics->get_center_of_masses(),
+                           kinetics->get_masses());
+    _compute_first_order_components(kinematics, q, gravity);
     return inertia_matrix_gp_;
 }
 
-VectorXd DQ_GaussPrincipleSolver::compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics> &robot,
-                                                          const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                                          const std::vector<DQ> &center_of_masses,
-                                                          const std::vector<double> &masses,
-                                                          const DQ &gravity,
+VectorXd DQ_GaussPrincipleSolver::compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                                          const std::shared_ptr<DQ_Kinetics>& kinetics,
                                                           const VectorXd&q,
                                                           const VectorXd& q_dot)
 {
-    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
-    _compute_first_order_components(q, default_gravity_);
-    _compute_second_order_components(q, q_dot);
+    _set_solver_parameters(kinematics,
+                           kinetics->get_inertia_tensors(),
+                           kinetics->get_center_of_masses(),
+                           kinetics->get_masses());
+    _compute_first_order_components(kinematics, q, default_gravity_);
+    _compute_second_order_components(kinematics, q, q_dot);
     return coriolis_vector_gp_;
 }
 
-VectorXd DQ_GaussPrincipleSolver::compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics> &robot,
-                                                                      const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
-                                                                      const std::vector<DQ> &center_of_masses,
-                                                                      const std::vector<double> &masses,
+VectorXd DQ_GaussPrincipleSolver::compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                                                      const std::shared_ptr<DQ_Kinetics>& kinetics,
                                                                       const DQ &gravity,
                                                                       const VectorXd& q)
 {
-    _set_solver_parameters(robot, inertia_tensors, center_of_masses, masses);
-    _compute_first_order_components(q, gravity);
+    _set_solver_parameters(kinematics,
+                           kinetics->get_inertia_tensors(),
+                           kinetics->get_center_of_masses(),
+                           kinetics->get_masses());
+    _compute_first_order_components(kinematics, q, gravity);
     return gravitational_forces_gp_;
 }
 

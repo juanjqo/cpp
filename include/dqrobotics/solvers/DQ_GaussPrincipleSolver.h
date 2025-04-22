@@ -18,6 +18,7 @@ private:
                                 const std::vector<Matrix<double, 3, 3> > &inertia_tensors,
                                 const std::vector<DQ> &center_of_masses,
                                 const std::vector<double> &masses);
+
     bool solver_parameters_set_{false};
 
 protected:
@@ -49,27 +50,34 @@ enum class ROBOT_TYPE
     };
     ROBOT_TYPE robot_type_;
 
+    ROBOT_TYPE _get_robot_type(const std::shared_ptr<DQ_Kinematics>& kinematics);
+
     bool _update_configuration(const VectorXd &q);
     bool _update_configuration_velocities(const VectorXd &q_dot);
-    bool _update_gravity(const DQ& gravity);
 
 
 
-    DQ _get_fkm(const VectorXd &q, const int &to_ith_link);
-    MatrixXd _get_pose_jacobian(const VectorXd &q, const int &to_ith_link);
-    MatrixXd _get_pose_jacobian_derivative(const VectorXd &q, const VectorXd &q_dot,
+    DQ _get_fkm(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                const VectorXd &q,
+                const int &to_ith_link);
+
+    MatrixXd _get_pose_jacobian(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                const VectorXd &q,
+                                const int &to_ith_link);
+
+    MatrixXd _get_pose_jacobian_derivative(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                           const VectorXd &q,
+                                           const VectorXd &q_dot,
                                            const int &to_ith_link);
 
-    //void _compute_robot_dynamics_without_coriolis_effect(const VectorXd &q);
 
-    void _compute_first_order_components(const VectorXd &q, const DQ& gravity);
-    void _compute_second_order_components(const VectorXd &q, const VectorXd &q_dot);
+    void _compute_first_order_components(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                         const VectorXd &q, const DQ& gravity);
+    void _compute_second_order_components(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                          const VectorXd &q, const VectorXd &q_dot);
 
 
 
-    //void _compute_robot_dynamics(const VectorXd &q,
-    //                             const VectorXd &q_dot,
-    //                             const DQ& gravity);
 
     static MatrixXd twist_jacobian(const MatrixXd &pose_jacobian, const DQ &pose);
 
@@ -89,34 +97,25 @@ public:
     //virtual ~DQ_GaussPrincipleSolver();
     DQ_GaussPrincipleSolver();
 
-    VectorXd compute_generalized_forces(const std::shared_ptr<DQ_Kinematics>& robot,
-                                        const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
-                                        const std::vector<DQ>& center_of_masses,
-                                        const std::vector<double>& masses,
+    VectorXd compute_generalized_forces(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                        const std::shared_ptr<DQ_Kinetics>& kinetics,
                                         const DQ& gravity,
                                         const VectorXd& q,
                                         const VectorXd& q_dot,
                                         const VectorXd& q_dot_dot) override;
 
-    MatrixXd compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& robot,
-                                    const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
-                                    const std::vector<DQ>& center_of_masses,
-                                    const std::vector<double>& masses,
+    MatrixXd compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                    const std::shared_ptr<DQ_Kinetics>& kinetics,
                                     const DQ& gravity,
                                     const VectorXd& q) override;
 
-    VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& robot,
-                                     const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
-                                     const std::vector<DQ>& center_of_masses,
-                                     const std::vector<double>& masses,
-                                     const DQ& gravity,
+    VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                     const std::shared_ptr<DQ_Kinetics>& kinetics,
                                      const VectorXd& q,
                                      const VectorXd& q_dot) override;
 
-    VectorXd compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics>& robot,
-                                                 const std::vector<Matrix<double, 3, 3>>& inertia_tensors,
-                                                 const std::vector<DQ>& center_of_masses,
-                                                 const std::vector<double>& masses,
+    VectorXd compute_gravitational_forces_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,
+                                                 const std::shared_ptr<DQ_Kinetics>& kinetics,
                                                  const DQ& gravity,
                                                  const VectorXd& q) override;
 
