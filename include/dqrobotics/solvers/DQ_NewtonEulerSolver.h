@@ -70,7 +70,6 @@ public:
 
     MatrixXd compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& kinematics,
                                     const std::shared_ptr<DQ_Kinetics>& kinetics,
-                                    const DQ& gravity,
                                     const VectorXd& q) override;
 
     VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,

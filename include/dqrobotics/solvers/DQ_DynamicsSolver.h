@@ -40,9 +40,9 @@ protected:
    VectorXd dq_;
    VectorXd ddq_;
 
-   std::vector<Matrix<double, 3,3>> inertia_tensors_;
-   std::vector<DQ> center_of_masses_;
-   std::vector<double> masses_;
+   //std::vector<Matrix<double, 3,3>> inertia_tensors_;
+   //std::vector<DQ> center_of_masses_;
+   //std::vector<double> masses_;
 
 
    DQ_DynamicsSolver();
@@ -57,7 +57,6 @@ public:
 
    virtual MatrixXd compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& kinematics,
                                            const std::shared_ptr<DQ_Kinetics>& kinetics,
-                                           const DQ& gravity,
                                            const VectorXd& q) = 0;
 
    virtual VectorXd compute_coriolis_vector(const std::shared_ptr<DQ_Kinematics>& kinematics,

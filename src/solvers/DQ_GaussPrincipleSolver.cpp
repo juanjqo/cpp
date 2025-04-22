@@ -260,14 +260,13 @@ void DQ_GaussPrincipleSolver::_compute_first_order_components(const std::shared_
 
 MatrixXd DQ_GaussPrincipleSolver::compute_inertia_matrix(const std::shared_ptr<DQ_Kinematics>& kinematics,
                                                          const std::shared_ptr<DQ_Kinetics>& kinetics,
-                                                         const DQ &gravity,
                                                          const VectorXd& q)
 {
     _set_solver_parameters(kinematics,
                            kinetics->get_inertia_tensors(),
                            kinetics->get_center_of_masses(),
                            kinetics->get_masses());
-    _compute_first_order_components(kinematics, q, gravity);
+    _compute_first_order_components(kinematics, q, default_gravity_);
     return inertia_matrix_gp_;
 }
 

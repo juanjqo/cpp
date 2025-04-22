@@ -80,7 +80,6 @@ MatrixXd DQ_Dynamics::compute_inertia_matrix(const VectorXd &q)
         throw std::runtime_error("Bad call in DQ_Dynamics::compute_inertia_matrix: Undefined solver!");
     return dynamic_solver_->compute_inertia_matrix(shared_from_this(),
                                                    shared_from_this(),
-                                                   shared_from_this()->get_gravity_acceleration(),
                                                    q);
 }
 
